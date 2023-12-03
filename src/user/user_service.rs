@@ -1,6 +1,7 @@
 use super::user_repository;
 use axum::{extract::Path, response::IntoResponse, Json};
 use serde::{Deserialize, Serialize};
+
 #[derive(Deserialize, Serialize)]
 pub enum User {
     SigningUp {

@@ -1,52 +1,41 @@
 use std::sync::Arc;
 
 use axum::{
+    http::StatusCode,
+    response::IntoResponse,
     routing::{get, post},
-    Json, Router,
+    Extension, Json, Router,
 };
 
-use super::user_service::{self, User};
+use crate::user::user_service::{User, UserService};
 
-pub struct UserController {
-    user_service: Arc<user_service::UserService>,
-}
-
-impl UserController {
-    pub fn new(user_service: user_service::UserService) -> Self {
-        Self {
-            user_service: Arc::new(user_service),
+pub fn user_routes() -> Router {
+    async fn sign_in(
+        Extension(user_service): Extension<Arc<UserService>>,
+        Json(user): Json<User>,
+    ) -> impl IntoResponse {
+        if let User::SigningIn { email } = user {
+            user_service.sign_in(email).await;
+            StatusCode::CREATED
+        } else {
+            StatusCode::BAD_REQUEST
         }
     }
 
-    pub fn routes(self) -> Router {
-        let user_service = self.user_service.clone();
-
-        Router::new()
-            .route(
-                "/sign_up",
-                post(move |Json(signing_up): Json<User>| {
-                    let user_service = user_service.clone();
-                    async move {
-                        if let User::SigningUp { name, email } = signing_up {
-                            user_service.sign_up(name, email).await;
-                        } else {
-                            panic!("signing_up is not User::SigningUp")
-                        }
-                    }
-                }),
-            )
-            .route(
-                "/sign_in",
-                post(move |Json(signing_in): Json<User>| {
-                    let user_service = user_service.clone();
-                    async move {
-                        if let User::SigningIn { email } = signing_in {
-                            user_service.sign_in(email).await;
-                        } else {
-                            panic!("signing_in is not User::SigningIn")
-                        }
-                    }
-                }),
-            )
+    async fn sign_up(
+        Extension(user_service): Extension<Arc<UserService>>,
+        Json(user): Json<User>,
+    ) -> impl IntoResponse {
+        if let User::SigningUp { name, email } = user {
+            user_service.sign_up(name, email).await;
+            StatusCode::CREATED
+        } else {
+            StatusCode::BAD_REQUEST
+        }
     }
+
+    Router::new()
+        .route("/hello", get(|| async { "Hello, World!" }))
+        .route("/sign-up", post(sign_up))
+        .route("/sign-in", post(sign_in))
 }
