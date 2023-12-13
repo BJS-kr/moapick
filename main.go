@@ -1,12 +1,11 @@
 package main
 
 import (
-	"japanism/db"
-	"japanism/routes"
+	"moapick/routes"
 )
 
 func main() {
-	db.InitDB()
+	// db.InitDB()
 	r := routes.SetupRouter()
 
 	r.Run(":8080")

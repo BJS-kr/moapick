@@ -1,4 +1,4 @@
-module japanism
+module moapick
 
 go 1.21.1
 

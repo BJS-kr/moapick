@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"japanism/user"
+	"moapick/user"
 
 	"github.com/gin-gonic/gin"
 )
