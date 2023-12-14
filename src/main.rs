@@ -1,10 +1,6 @@
 use crate::user::user_controller::user_routes;
-use axum::{
-    http::{Method, StatusCode},
-    response::IntoResponse,
-    Extension, Json, Router,
-};
-use serde::{Deserialize, Serialize};
+use axum::{http::Method, Extension, Router};
+use dotenvy::dotenv;
 use std::{net::SocketAddr, sync::Arc};
 use tower_http::cors::{Any, CorsLayer};
 
@@ -13,16 +9,17 @@ pub mod user;
 
 #[tokio::main]
 async fn main() {
+    dotenv().ok();
     tracing_subscriber::fmt::init();
 
     let cors = CorsLayer::new()
         .allow_methods([Method::GET, Method::POST])
         .allow_origin(Any);
-
-    let db_client = db::conn::connect().await.unwrap();
-
+    let db_url =
+        std::env::var("DATABASE_URL").expect("DATABASE_URL must be provided as a env variable");
+    let pool = db::conn::establish_connection(db_url);
     // user domain
-    let user_repository = user::user_repository::UserRepository::new(db_client);
+    let user_repository = user::user_repository::UserRepository::new(pool);
     let user_service = Arc::new(user::user_service::UserService::new(user_repository));
 
     // main app
@@ -35,8 +32,6 @@ async fn main() {
 
     tracing::debug!("listening on {}", addr);
 
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }

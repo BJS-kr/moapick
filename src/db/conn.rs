@@ -1,17 +1,33 @@
-use tokio_postgres::{Error, NoTls};
+use std::sync::Arc;
 
-pub async fn connect() -> Result<tokio_postgres::Client, Error> {
-    let (client, connection) = tokio_postgres::connect(
-        "host=localhost user=postgres password=postgres dbname=postgres",
-        NoTls,
-    )
-    .await?;
+use diesel::{
+    r2d2::{self, ConnectionManager},
+    PgConnection,
+};
+use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 
-    tokio::spawn(async move {
-        if let Err(e) = connection.await {
-            eprintln!("connection error: {}", e);
-        }
-    });
+pub type Pool = r2d2::Pool<ConnectionManager<PgConnection>>;
+pub type DB = diesel::pg::Pg;
 
-    Ok(client)
+const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations/");
+
+// brew install libpq && brew link --force libpq && PQ_LIB_DIR="$(brew --prefix libpq)/lib"
+// cargo clean && cargo run
+pub fn establish_connection(db_url: String) -> Pool {
+    let manager = ConnectionManager::<PgConnection>::new(db_url);
+    let pool = r2d2::Pool::builder()
+        .build(manager)
+        .expect("failed to create pool");
+
+    let mut conn = pool.get().expect("failed to apply db migrations");
+
+    // same with: <PgConnection as MigrationHarness<DB>>::run_pending_migrations(&mut conn, MIGRATIONS);
+    run_migrations(&mut conn);
+
+    pool
+}
+
+pub fn run_migrations(conn: &mut impl MigrationHarness<DB>) {
+    conn.run_pending_migrations(MIGRATIONS)
+        .expect("failed to run migrations");
 }

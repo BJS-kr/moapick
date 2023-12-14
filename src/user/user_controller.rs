@@ -1,15 +1,19 @@
-use std::sync::Arc;
-
 use axum::{
     http::StatusCode,
     response::IntoResponse,
     routing::{get, post},
     Extension, Json, Router,
 };
+use std::sync::Arc;
 
 use crate::user::user_service::{User, UserService};
 
 pub fn user_routes() -> Router {
+    let router = Router::new()
+        .route("/hello", get(|| async { "Hello, World!" }))
+        .route("/sign-up", post(sign_up))
+        .route("/sign-in", post(sign_in));
+
     async fn sign_in(
         Extension(user_service): Extension<Arc<UserService>>,
         Json(user): Json<User>,
@@ -34,8 +38,5 @@ pub fn user_routes() -> Router {
         }
     }
 
-    Router::new()
-        .route("/hello", get(|| async { "Hello, World!" }))
-        .route("/sign-up", post(sign_up))
-        .route("/sign-in", post(sign_in))
+    router
 }

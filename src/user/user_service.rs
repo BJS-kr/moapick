@@ -28,7 +28,7 @@ impl UserService {
     }
 
     pub async fn sign_up(&self, name: String, email: String) -> &str {
-        self.user_repository.sign_up(name, email).await
+        ""
     }
 
     pub async fn sign_in(&self, email: String) -> &str {
