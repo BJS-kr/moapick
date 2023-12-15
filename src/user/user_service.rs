@@ -1,31 +1,8 @@
-use super::user_repository;
-use serde::{Deserialize, Serialize};
-
-#[derive(Deserialize, Serialize)]
-pub enum User {
-    SigningUp {
-        name: String,
-        email: String,
-    },
-    SigningIn {
-        email: String,
-    },
-    SignedIn {
-        id: i32,
-        name: String,
-        email: String,
-    },
-}
-
-pub enum ErrorContext {
-    ClientError,
-    ServerError,
-}
-
-pub enum UserOrError {
-    User(User),
-    Error(ErrorContext),
-}
+use super::{
+    user_repository,
+    user_state::{User, UserOrFail},
+};
+use crate::fault::Fault;
 
 pub struct UserService {
     user_repository: user_repository::UserRepository,
@@ -36,21 +13,22 @@ impl UserService {
         Self { user_repository }
     }
 
-    pub async fn sign_up(&self, name: String, email: String) -> UserOrError {
-        let user = self.user_repository.sign_up(name, email).await;
+    pub async fn sign_up(&self, name: String, email: String) -> UserOrFail {
+        let user_or_fail = self.user_repository.sign_up(name, email).await;
 
-        match user {
-            Ok(user) => match user {
-                UserOrError::User(User::SigningUp { name, email }) => {
-                    UserOrError::User(User::SigningUp { name, email })
-                }
-                _ => UserOrError::Error(ErrorContext::ClientError),
-            },
-            Err(_) => UserOrError::Error(ErrorContext::ServerError),
+        if let Ok(user_or_fail) = user_or_fail {
+            match user_or_fail {
+                signed_up_user @ UserOrFail::User(User::SignedUp { .. }) => signed_up_user,
+                client_fault @ UserOrFail::Fail(Fault::Client) => client_fault,
+                _ => UserOrFail::Fail(Fault::Server),
+            }
+        } else {
+            UserOrFail::Fail(Fault::Server)
         }
     }
 
-    pub async fn sign_in(&self, email: String) -> &str {
-        self.user_repository.sign_in(email).await
+    pub async fn sign_in(&self, email: String) -> UserOrFail {
+        self.user_repository.sign_in(email).await;
+        todo!();
     }
 }

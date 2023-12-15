@@ -15,6 +15,7 @@ use tower_http::{
 use tracing::Span;
 
 pub mod db;
+pub mod fault;
 pub mod user;
 
 #[derive(Debug, Clone)]

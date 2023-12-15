@@ -6,7 +6,7 @@ use axum::{
 };
 use std::sync::Arc;
 
-use crate::user::user_service::{User, UserService};
+use crate::user::{user_service::UserService, user_state::User};
 
 pub fn user_routes() -> Router {
     let router = Router::new()
