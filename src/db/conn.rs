@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use diesel::{
     r2d2::{self, ConnectionManager},
     PgConnection,

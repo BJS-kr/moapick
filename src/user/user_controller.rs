@@ -6,7 +6,13 @@ use axum::{
 };
 use std::sync::Arc;
 
-use crate::user::{user_service::UserService, user_state::User};
+use crate::{
+    fault::Fault,
+    user::{
+        user_service::UserService,
+        user_state::{User, UserOrFail},
+    },
+};
 
 pub fn user_routes() -> Router {
     let router = Router::new()
@@ -20,6 +26,7 @@ pub fn user_routes() -> Router {
     ) -> impl IntoResponse {
         if let User::SigningIn { email } = user {
             user_service.sign_in(email).await;
+
             StatusCode::CREATED
         } else {
             StatusCode::BAD_REQUEST
@@ -31,8 +38,13 @@ pub fn user_routes() -> Router {
         Json(user): Json<User>,
     ) -> impl IntoResponse {
         if let User::SigningUp { name, email } = user {
-            user_service.sign_up(name, email).await;
-            StatusCode::CREATED
+            let sign_up_result = user_service.sign_up(name, email).await;
+
+            match sign_up_result {
+                UserOrFail::User(User::SignedUp { .. }) => StatusCode::CREATED,
+                UserOrFail::Fail(Fault::Client) => StatusCode::CONFLICT,
+                _ => StatusCode::INTERNAL_SERVER_ERROR,
+            }
         } else {
             StatusCode::BAD_REQUEST
         }
