@@ -26,6 +26,7 @@ pub enum UserOrFail {
     Fail(Fault),
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct AccessTokenAndRefreshToken {
     pub access_token: String,
     pub refresh_token: String,

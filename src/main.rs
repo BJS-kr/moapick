@@ -4,6 +4,7 @@ use axum::{
     http::{Method, Request, StatusCode, Uri},
     middleware::{self, Next},
     response::{IntoResponse, Response},
+    routing::get,
     Extension, Router,
 };
 use dotenvy::dotenv;
@@ -70,6 +71,7 @@ async fn main() {
 
     let app = Router::new()
         .layer(cors)
+        .route("/hello", get(|| async { "Hello, World!" }))
         .nest("/user", user_routes())
         .layer(Extension(user_service))
         .fallback(handler_404)

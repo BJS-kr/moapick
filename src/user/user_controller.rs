@@ -1,22 +1,17 @@
-use axum::{
-    http::StatusCode,
-    response::IntoResponse,
-    routing::{get, post},
-    Extension, Json, Router,
-};
+use axum::{http::StatusCode, response::IntoResponse, routing::post, Extension, Json, Router};
+use serde_json::json;
 use std::sync::Arc;
 
 use crate::{
     fault::Fault,
     user::{
         user_service::UserService,
-        user_state::{User, UserOrFail},
+        user_state::{TokensOrFail, User, UserOrFail},
     },
 };
 
 pub fn user_routes() -> Router {
     let router = Router::new()
-        .route("/hello", get(|| async { "Hello, World!" }))
         .route("/sign-up", post(sign_up))
         .route("/sign-in", post(sign_in));
 
@@ -25,11 +20,28 @@ pub fn user_routes() -> Router {
         Json(user): Json<User>,
     ) -> impl IntoResponse {
         if let User::SigningIn { email } = user {
-            user_service.sign_in(email).await;
+            let tokens_or_fail = user_service.sign_in(email).await;
 
-            StatusCode::CREATED
+            match tokens_or_fail {
+                TokensOrFail::Tokens(tokens) => (StatusCode::CREATED, Json(json!(tokens))),
+                TokensOrFail::Fail(Fault::Client) => (
+                    StatusCode::NOT_FOUND,
+                    Json(json!({
+                        "error": "user not found"
+                    })),
+                ),
+                _ => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(json!({
+                        "error": "internal server error"
+                    })),
+                ),
+            }
         } else {
-            StatusCode::BAD_REQUEST
+            (
+                StatusCode::BAD_REQUEST,
+                Json(json!({"error": "bad request"})),
+            )
         }
     }
 
