@@ -1,8 +1,26 @@
 use super::{
     user_repository,
-    user_state::{User, UserOrFail},
+    user_state::{AccessTokenAndRefreshToken, TokensOrFail, User, UserOrFail},
 };
 use crate::fault::Fault;
+use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize)]
+struct AccessTokenClaims<'a> {
+    id: i32,
+    name: &'a str,
+    email: &'a str,
+    exp: usize,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct RefreshTokenClaims<'a> {
+    id: i32,
+    name: &'a str,
+    email: &'a str,
+    exp: usize,
+}
 
 pub struct UserService {
     user_repository: user_repository::UserRepository,
@@ -27,8 +45,51 @@ impl UserService {
         }
     }
 
-    pub async fn sign_in(&self, email: String) -> UserOrFail {
-        self.user_repository.sign_in(email).await;
-        todo!();
+    pub async fn sign_in(&self, email: String) -> TokensOrFail {
+        let signed_in_user = self.user_repository.get_signed_in_user(email).await;
+        let secret =
+            std::env::var("JWT_SECRET").expect("JWT_SECRET must be provided as a env variable");
+        if let Ok(signed_in_user) = signed_in_user {
+            match signed_in_user {
+                UserOrFail::User(User::SignedIn { id, name, email }) => {
+                    let access_token = self.generate_jwt_token(&secret, id, &name, &email, 1000000);
+                    let refresh_token =
+                        self.generate_jwt_token(&secret, id, &name, &email, 10000000);
+
+                    TokensOrFail::Tokens(AccessTokenAndRefreshToken {
+                        access_token,
+                        refresh_token,
+                    })
+                }
+                UserOrFail::Fail(Fault::Client) => TokensOrFail::Fail(Fault::Client),
+                _ => TokensOrFail::Fail(Fault::Server),
+            }
+        } else {
+            TokensOrFail::Fail(Fault::Server)
+        }
+    }
+
+    fn generate_jwt_token(
+        &self,
+        secret: &str,
+        id: i32,
+        name: &str,
+        email: &str,
+        exp: usize,
+    ) -> String {
+        let jwt_token = encode(
+            &Header::default(),
+            &AccessTokenClaims {
+                id,
+                name,
+                email,
+                exp,
+            },
+            // as_ref는 reference들끼리 형변환 하게 해주는 메서드. into랑 비슷하다고 보면 된다.
+            &EncodingKey::from_secret(secret.as_ref()),
+        )
+        .unwrap();
+
+        jwt_token
     }
 }

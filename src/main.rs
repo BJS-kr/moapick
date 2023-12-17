@@ -23,7 +23,6 @@ struct RequestUri(Uri);
 
 async fn uri_middleware(request: Request<Body>, next: Next) -> Response {
     let uri = request.uri().clone();
-
     let mut response = next.run(request).await;
 
     response.extensions_mut().insert(RequestUri(uri));
@@ -64,11 +63,6 @@ async fn main() {
                     .map(|r| &r.0)
                     .unwrap(),
                 response.status(),
-                // response
-                //     .headers()
-                //     .get("content-length")
-                //     .map(|v| v.to_str().unwrap())
-                //     .unwrap_or("-"),
                 latency.as_millis()
             )
         },

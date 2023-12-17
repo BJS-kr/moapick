@@ -25,3 +25,13 @@ pub enum UserOrFail {
     User(User),
     Fail(Fault),
 }
+
+pub struct AccessTokenAndRefreshToken {
+    pub access_token: String,
+    pub refresh_token: String,
+}
+
+pub enum TokensOrFail {
+    Tokens(AccessTokenAndRefreshToken),
+    Fail(Fault),
+}
