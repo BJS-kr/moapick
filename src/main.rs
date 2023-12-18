@@ -1,8 +1,7 @@
 use crate::user::user_controller::user_routes;
 use axum::{
-    body::Body,
-    http::{Method, Request, StatusCode, Uri},
-    middleware::{self, Next},
+    http::{Method, StatusCode},
+    middleware::from_fn,
     response::{IntoResponse, Response},
     routing::get,
     Extension, Router,
@@ -17,19 +16,8 @@ use tracing::Span;
 
 pub mod db;
 pub mod fault;
+pub mod middleware;
 pub mod user;
-
-#[derive(Debug, Clone)]
-struct RequestUri(Uri);
-
-async fn uri_middleware(request: Request<Body>, next: Next) -> Response {
-    let uri = request.uri().clone();
-    let mut response = next.run(request).await;
-
-    response.extensions_mut().insert(RequestUri(uri));
-
-    response
-}
 
 async fn handler_404() -> impl IntoResponse {
     (
@@ -60,7 +48,7 @@ async fn main() {
                 "{:?} {} {}ms",
                 response
                     .extensions()
-                    .get::<RequestUri>()
+                    .get::<middleware::uri::RequestUri>()
                     .map(|r| &r.0)
                     .unwrap(),
                 response.status(),
@@ -75,7 +63,7 @@ async fn main() {
         .nest("/user", user_routes())
         .layer(Extension(user_service))
         .fallback(handler_404)
-        .layer(middleware::from_fn(uri_middleware))
+        .layer(from_fn(middleware::uri::uri_middleware))
         .layer(trace_layer);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));

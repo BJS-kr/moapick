@@ -7,7 +7,7 @@ use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation}
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-struct AccessTokenClaims<'a> {
+pub struct AccessTokenClaims<'a> {
     id: i32,
     name: &'a str,
     email: &'a str,
@@ -15,7 +15,7 @@ struct AccessTokenClaims<'a> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct RefreshTokenClaims<'a> {
+pub struct RefreshTokenClaims<'a> {
     id: i32,
     name: &'a str,
     email: &'a str,
