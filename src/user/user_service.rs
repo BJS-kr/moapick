@@ -3,23 +3,15 @@ use super::{
     user_state::{AccessTokenAndRefreshToken, TokensOrFail, User, UserOrFail},
 };
 use crate::fault::Fault;
-use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
+use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct AccessTokenClaims<'a> {
-    id: i32,
-    name: &'a str,
-    email: &'a str,
-    exp: usize,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RefreshTokenClaims<'a> {
-    id: i32,
-    name: &'a str,
-    email: &'a str,
-    exp: usize,
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct TokenClaims {
+    pub id: i32,
+    pub name: String,
+    pub email: String,
+    pub exp: usize,
 }
 
 pub struct UserService {
@@ -79,10 +71,10 @@ impl UserService {
     ) -> String {
         let jwt_token = encode(
             &Header::default(),
-            &AccessTokenClaims {
+            &TokenClaims {
                 id,
-                name,
-                email,
+                name: name.into(),
+                email: email.into(),
                 exp,
             },
             // as_ref는 reference들끼리 형변환 하게 해주는 메서드. into랑 비슷하다고 보면 된다.

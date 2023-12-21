@@ -1,7 +1,11 @@
-use axum::{http::StatusCode, response::IntoResponse, routing::post, Extension, Json, Router};
+use axum::{
+    http::StatusCode, middleware::from_fn, response::IntoResponse, routing::post, Extension, Json,
+    Router,
+};
 use serde_json::json;
 use std::sync::Arc;
 
+use crate::middleware::jwt::jwt_middleware;
 use crate::{
     fault::Fault,
     user::{
@@ -13,7 +17,8 @@ use crate::{
 pub fn user_routes() -> Router {
     let router = Router::new()
         .route("/sign-up", post(sign_up))
-        .route("/sign-in", post(sign_in));
+        .route("/sign-in", post(sign_in))
+        .layer(from_fn(jwt_middleware));
 
     async fn sign_in(
         Extension(user_service): Extension<Arc<UserService>>,

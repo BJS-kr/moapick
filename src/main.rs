@@ -7,6 +7,8 @@ use axum::{
     Extension, Router,
 };
 use dotenvy::dotenv;
+use middleware::jwt::jwt_middleware;
+use middleware::uri::uri_middleware;
 use std::{net::SocketAddr, sync::Arc, time::Duration};
 use tower_http::{
     cors::{Any, CorsLayer},
@@ -61,9 +63,10 @@ async fn main() {
         .layer(cors)
         .route("/hello", get(|| async { "Hello, World!" }))
         .nest("/user", user_routes())
+        .layer(from_fn(jwt_middleware))
         .layer(Extension(user_service))
         .fallback(handler_404)
-        .layer(from_fn(middleware::uri::uri_middleware))
+        .layer(from_fn(uri_middleware))
         .layer(trace_layer);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
