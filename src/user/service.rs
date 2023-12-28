@@ -1,6 +1,6 @@
 use super::{
-    user_repository,
-    user_state::{AccessTokenAndRefreshToken, TokensOrFail, User, UserOrFail},
+    repository,
+    state::{AccessTokenAndRefreshToken, TokensOrFail, User, UserOrFail},
 };
 use crate::fault::Fault;
 use jsonwebtoken::{encode, EncodingKey, Header};
@@ -15,11 +15,11 @@ pub struct TokenClaims {
 }
 
 pub struct UserService {
-    user_repository: user_repository::UserRepository,
+    user_repository: repository::UserRepository,
 }
 
 impl UserService {
-    pub fn new(user_repository: user_repository::UserRepository) -> Self {
+    pub fn new(user_repository: repository::UserRepository) -> Self {
         Self { user_repository }
     }
 

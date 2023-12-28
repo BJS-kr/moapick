@@ -6,7 +6,7 @@ use axum::{
 };
 use jsonwebtoken::{decode, errors::ErrorKind, Algorithm, DecodingKey, Validation};
 
-use crate::user::user_service::TokenClaims;
+use crate::user::service::TokenClaims;
 
 const BEARER: &str = "Bearer";
 const AUTHORIZATION: &str = "Authorization";

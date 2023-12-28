@@ -9,8 +9,8 @@ use crate::middleware::jwt::jwt_middleware;
 use crate::{
     fault::Fault,
     user::{
-        user_service::UserService,
-        user_state::{TokensOrFail, User, UserOrFail},
+        service::UserService,
+        state::{TokensOrFail, User, UserOrFail},
     },
 };
 

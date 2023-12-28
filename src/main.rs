@@ -1,4 +1,4 @@
-use crate::user::user_controller::user_routes;
+use crate::user::controller::user_routes;
 use axum::{
     http::{Method, StatusCode},
     middleware::from_fn,
@@ -16,6 +16,7 @@ use tower_http::{
 };
 use tracing::Span;
 
+pub mod article;
 pub mod db;
 pub mod fault;
 pub mod middleware;
@@ -40,8 +41,8 @@ async fn main() {
         std::env::var("DATABASE_URL").expect("DATABASE_URL must be provided as a env variable");
     let pool = db::conn::establish_connection(db_url);
     // user domain
-    let user_repository = user::user_repository::UserRepository::new(pool);
-    let user_service = Arc::new(user::user_service::UserService::new(user_repository));
+    let user_repository = user::repository::UserRepository::new(pool);
+    let user_service = Arc::new(user::service::UserService::new(user_repository));
 
     // main app
     let trace_layer = TraceLayer::new_for_http().on_response(

@@ -7,7 +7,7 @@ use anyhow::{anyhow, Ok, Result};
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, PooledConnection};
 
-use super::user_state::{User, UserOrFail};
+use super::state::{User, UserOrFail};
 
 pub struct UserRepository {
     pool: Pool,
