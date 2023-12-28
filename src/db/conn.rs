@@ -17,7 +17,7 @@ const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations/");
 // libpq가 없다는 에러 자체는 사용자 환경변수에 PQ_LIB_DIR 변수를 postgres설치된 곳에 lib경로를 넣어주니 해결되었음. 다만 cargo clean해야 함
 // STATUS_DLL_NOTFOUND에러가 windows에서는 추가되는데, 이는 환경변수의 PATH 변수에 pg lib경로를 추가해주라는 조언이 있었음. 어느정도 해결되었지만 찾을 수 없는 dll 세개가 발견됨. libcrypto-3, libssl-3, libintl-9
 // openssl 최신버전으로 재설치해봄 컴퓨터에 1버전이 깔려있었고 최신버전은 3버전이었음 -> libssl-3-x64.dll 과 libcrypto-3-x64.dll 에러가 해결됨. 남은건 libintl-9.dll
-// libintl-9.dll 수동으로 다운받아서 딱히 넣을 곳이 없어서 그냥 postgres lib에 넣음. PATH에 포함된 어느 경로에건 있으면 될 듯
+// libintl-9.dll 수동으로 다운받아서 딱히 넣을 곳이 없어서 그냥 postgres lib에 넣음. PATH에 포함된 어느 경로에건 있으면 될 듯. 이건 pg설치할 때 옵션문제인 것 같음. libintl-9이 없어서 postgis를 실행할 수 없었다는 인터넷 글이 많음. 아마 diesel이나 r2d2가 postgis feature를 사용하는 것으로 추측됨. 나중에 pg설치할 때는 postgis옵션 추가해서 설치해야할듯?
 // 해결 완료
 pub fn establish_connection(db_url: String) -> Pool {
     let manager = ConnectionManager::<PgConnection>::new(db_url);
