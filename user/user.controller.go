@@ -45,7 +45,7 @@ func UserController(r *gin.Engine) {
 
 	au.GET("/:userId", func(c *gin.Context) {
 		userId := c.Param("userId")
-		user, err := GetUser(userId)
+		user, err := GetUserById(userId)
 
 		if err != nil {
 			handleFindOneError(c, err, "User", "userId")

@@ -35,8 +35,10 @@ func JwtMiddleware() gin.HandlerFunc {
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			email, found := claims["email"]
+
 			if !found {
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "expected claim missing"})
+				c.Abort()
 			}
 
 			c.Set("email", email)

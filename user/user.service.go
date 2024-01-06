@@ -1,16 +1,13 @@
 package user
 
 import (
-	"moapick/db/models"
 	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GetUser(userId string) (models.User, error) {
-	return GetUserById(userId)
-}
+
 
 func IssueJwt(userEmail string) (string, error) {
 	var (

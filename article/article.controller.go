@@ -2,10 +2,12 @@ package article
 
 import (
 	"log"
+	"moapick/db/models"
 	"moapick/middleware"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/otiai10/opengraph"
 )
 
 type ArticleBody struct {
@@ -39,15 +41,36 @@ func ArticleController(r *gin.Engine) {
 			return
 		}
 
-		savedArticle, err := SaveArticle(email, article)
+		isValidUrl := IsValidURL(article.Link)
 
-		if err != nil {
+		if !isValidUrl {
+			log.Println("invalid url")
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid url"})
+			return
+		}
+
+		articleEntity := models.Article{
+		Email:       email,
+		ArticleLink:article.Link,
+		}
+
+		og, err := opengraph.Fetch(article.Link)
+
+		if err == nil {
+			if len(og.Image) > 0 {
+				articleEntity.OgImageLink = og.Image[0].URL
+			}
+		}
+
+		saveErr := SaveArticle(&articleEntity)
+
+		if saveErr != nil {
 			log.Println(err.Error())
 			c.JSON(http.StatusBadRequest, gin.H{"error": "failed to save article"})
 			return
 		}
 
-		c.JSON(http.StatusCreated, *savedArticle)
+		c.JSON(http.StatusCreated, articleEntity)
 	})
 
 	a.GET("/all/:userEmail", func(ctx *gin.Context) {})
