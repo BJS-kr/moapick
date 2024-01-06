@@ -5,7 +5,7 @@ import (
 	"moapick/db/models"
 )
 
-func GetUserById(userId string) (models.User, error) {
+func GetUserById(userId uint) (models.User, error) {
 	var user models.User
 
 	result := db.Client.First(&user, "id = ?", userId)

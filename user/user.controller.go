@@ -6,6 +6,7 @@ import (
 	"log"
 	"moapick/middleware"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -44,8 +45,14 @@ func UserController(r *gin.Engine) {
 	au.Use(middleware.JwtMiddleware())
 
 	au.GET("/:userId", func(c *gin.Context) {
-		userId := c.Param("userId")
-		user, err := GetUserById(userId)
+		userId, err := strconv.Atoi(c.Param("userId"))
+		
+		if err != nil {
+			c.JSON(http.StatusBadRequest, "userId must be integer")
+			return
+		}
+
+		user, err := GetUserById(uint(userId))
 
 		if err != nil {
 			handleFindOneError(c, err, "User", "userId")
@@ -61,5 +68,5 @@ func handleFindOneError(c *gin.Context, err error, target, by string) {
 	} else {
 		c.JSON(http.StatusInternalServerError, "Internal Server Error")
 	}
-	log.Print(err.Error())
+	log.Println(err.Error())
 }
