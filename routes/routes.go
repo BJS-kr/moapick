@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"moapick/article"
 	"moapick/user"
 
 	"github.com/gin-gonic/gin"
@@ -11,6 +12,7 @@ func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
 	user.UserController(r)
+	article.ArticleController(r)
 
 	return r
 }

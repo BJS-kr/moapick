@@ -29,15 +29,13 @@ func InitDB() {
 	port := os.Getenv("DB_PORT")
 	dbname := os.Getenv("DB_NAME")
 
-	// Connect to the PostgreSQL server without specifying the database name
 	db, err := sql.Open("postgres", fmt.Sprintf("host=%s user=%s password=%s port=%s sslmode=disable", host, user, password, port))
 	if err != nil {
 		panic(err)
 	}
-	// Create the database if it does not exist
+
 	_, err = db.Exec(fmt.Sprintf("CREATE DATABASE %s;", dbname))
 	if err != nil {
-		// Ignore the error if the database already exists
 		if !strings.Contains(err.Error(), "already exists") {
 			panic(err)
 		}
@@ -50,5 +48,5 @@ func InitDB() {
 		panic(err)
 	}
 
-	Client.AutoMigrate(&models.User{})
+	Client.AutoMigrate(&models.User{}, &models.Article{})
 }
