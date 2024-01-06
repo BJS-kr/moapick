@@ -4,10 +4,9 @@ import (
 	"log"
 	"moapick/db/models"
 	"moapick/middleware"
-	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/otiai10/opengraph"
 )
 
@@ -20,39 +19,32 @@ type UpdateArticleTitleBody struct {
 	Title string `json:"title"`
 }
 
-func ArticleController(r *gin.Engine) {
+func ArticleController(r *fiber.App) {
 	a := r.Group("/article")
 	a.Use(middleware.JwtMiddleware())
 
-	a.POST("/", func(c *gin.Context) {
-		IEmail, ok := c.Get("email")
-
-		if !ok {
-			log.Println("context does not have user email when trying to insert article link")
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get email"})
-		}
-
-		email, ok := IEmail.(string)
+	a.Post("/", func(c *fiber.Ctx) error {
+		email, ok := c.Locals("email").(string)
 
 		if !ok {
 			log.Println("failed to assert email as string")
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get email"})
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get email"})
 		}
 
-		article := SaveArticleBody{}
+		article := new(SaveArticleBody)
 
-		if err := c.ShouldBind(&article); err != nil {
+		if err := c.BodyParser(article); err != nil {
 			log.Println(err.Error())
-			c.JSON(http.StatusBadRequest, gin.H{"error": "unexpected request body"})
-			return
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "unexpected request body"})
+		
 		}
 
 		isValidUrl := IsValidURL(article.Link)
 
 		if !isValidUrl {
 			log.Println("invalid url")
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid url"})
-			return
+			return c.Status(fiber.StatusBadRequest).JSON( fiber.Map{"error": "invalid url"})
+		
 		}
 
 		articleEntity := models.Article{
@@ -73,101 +65,94 @@ func ArticleController(r *gin.Engine) {
 
 		if saveErr != nil {
 			log.Println(err.Error())
-			c.JSON(http.StatusBadRequest, gin.H{"error": "failed to save article"})
-			return
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "failed to save article"})
+			
 		}
 
-		c.JSON(http.StatusCreated, articleEntity)
+		return c.JSON( articleEntity)
 	})
 
-	a.GET("/all", func(c *gin.Context) {
-		IEmail, ok := c.Get("email")
-
-		if !ok {
-			log.Println("context does not have user email when trying to insert article link")
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get email"})
-		}
-
-		email, ok := IEmail.(string)
+	a.Get("/all", func(c *fiber.Ctx) error {
+		email, ok := c.Locals("email").(string)
 
 		if !ok {
 			log.Println("failed to assert email as string")
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get email"})
+			return c.Status(fiber.StatusInternalServerError).JSON( fiber.Map{"error": "failed to get email"})
 		}
 
 		articles, err := FindArticlesByEmail(email)
 
 		if err != nil {
 			log.Println(err.Error())
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get articles"})
-			return
+			return c.Status(fiber.StatusInternalServerError).JSON( fiber.Map{"error": "failed to get articles"})
+		
 		}
 
-		c.JSON(http.StatusOK, articles)
+		return c.JSON( articles)
 	})
 
-	a.GET("/:articleId", func(c *gin.Context) {
+	a.Get("/:articleId", func(c *fiber.Ctx)error {
 		
-		articleId, err := strconv.Atoi(c.Param("articleId"))
+		articleId, err := strconv.Atoi(c.Params("articleId"))
 		if err != nil {
-			c.JSON(http.StatusBadRequest, "articleId must be integer")
-			return
+			return c.Status(fiber.StatusBadRequest).JSON( fiber.Map{"error":"articleId must be integer"})
+			
 		}
 
 		article, err := FindArticleById(uint(articleId))
 
 		if err != nil {
 			log.Println(err.Error())
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get article"})
-			return
+			return c.Status(fiber.StatusInternalServerError).JSON( fiber.Map{"error": "failed to get article"})
+		
 		}
 
-		c.JSON(http.StatusOK, article)
+		return c.JSON(article)
 	})
 
-	a.DELETE("/:articleId", func(c *gin.Context) {
-		articleId, err := strconv.Atoi(c.Param("articleId"))
+	a.Delete("/:articleId", func(c *fiber.Ctx)error {
+		articleId, err := strconv.Atoi(c.Params("articleId"))
 
 		if err != nil {
-			c.JSON(http.StatusBadRequest, "articleId must be integer")
-			return
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "articleId must be integer"})
+			
 		}
 
 		err = DeleteArticleById(uint(articleId))
 
 		if err != nil {
 			log.Println(err.Error())
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete article"})
-			return
+			return c.Status(fiber.StatusInternalServerError).JSON( fiber.Map{"error": "failed to delete article"})
+			
 		}
 
-		c.Status(http.StatusOK)
+		return c.SendStatus(fiber.StatusOK)
 	})
 
-	a.PATCH("/title/:articleId", func (c *gin.Context) {
-		articleId, err := strconv.Atoi(c.Param("articleId"))
+	a.Patch("/title/:articleId", func (c *fiber.Ctx) error {
+		articleId, err := strconv.Atoi(c.Params("articleId"))
 
 		if err != nil {
-			c.JSON(http.StatusBadRequest, "articleId must be integer")
-			return
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error":"articleId must be integer"})
+			
 		}
 
-		updateArticleTitleBody := UpdateArticleTitleBody{}
+		updateArticleTitleBody := new(UpdateArticleTitleBody)
 
-		if err := c.ShouldBind(&updateArticleTitleBody); err != nil {
+		if err := c.BodyParser(updateArticleTitleBody); err != nil {
 			log.Println(err.Error())
-			c.JSON(http.StatusBadRequest, gin.H{"error": "unexpected request body"})
-			return
+			return c.Status(fiber.StatusBadRequest).JSON( fiber.Map{"error": "unexpected request body"})
+			
 		}
 
 		updateErr := UpdateArticleTitleById(uint(articleId), updateArticleTitleBody.Title)
 
 		if updateErr != nil {
 		log.Println(err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to update article title"})
-		return
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "failed to update article title"})
+		
 		}
 
-		c.Status(http.StatusOK)
+		return c.SendStatus(fiber.StatusOK)
 	})
 }

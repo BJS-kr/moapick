@@ -4,15 +4,11 @@ import (
 	"moapick/article"
 	"moapick/user"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
-func SetupRouter() *gin.Engine {
-	// Default에 panic recovery가 포함되어 있음
-	r := gin.Default()
+func SetupRouter(r *fiber.App)  {
 
 	user.UserController(r)
 	article.ArticleController(r)
-
-	return r
 }

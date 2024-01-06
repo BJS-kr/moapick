@@ -8,7 +8,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
+
 	"gorm.io/gorm"
 )
 
@@ -19,23 +20,22 @@ type JwtAccessToken struct {
 	AccessToken string `json:"access_token"`
 }
 
-func UserController(r *gin.Engine) {
+func UserController(r *fiber.App) {
 	u := r.Group("/user")
 
-	u.POST("/sign-in", func(c *gin.Context) {
-		singInBody := SignIn{}
+	u.Post("/sign-in", func(c *fiber.Ctx) error {
+		singInBody := new(SignIn)
 
-		if err := c.ShouldBind(&singInBody); err != nil {
+		if err := c.BodyParser(singInBody); err != nil {
 			log.Println(err.Error())
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
+			return c.Status(fiber.StatusBadRequest).JSON( fiber.Map{"error": err.Error()})
 		}
 
 		if jwt, err := IssueJwt(singInBody.Email); err == nil {
 			responseBody := JwtAccessToken{AccessToken: jwt}
-			c.JSON(http.StatusCreated, responseBody)
+			return c.JSON( responseBody)
 		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{
+			return c.Status(fiber.StatusInternalServerError).JSON( fiber.Map{
 				"error": "error during sign-in process",
 			})
 		}
@@ -44,29 +44,30 @@ func UserController(r *gin.Engine) {
 	au := u.Group("/")
 	au.Use(middleware.JwtMiddleware())
 
-	au.GET("/:userId", func(c *gin.Context) {
-		userId, err := strconv.Atoi(c.Param("userId"))
+	au.Get("/:userId", func(c *fiber.Ctx) error {
+		userId, err := strconv.Atoi(c.Params("userId"))
 		
 		if err != nil {
-			c.JSON(http.StatusBadRequest, "userId must be integer")
-			return
+			return c.JSON(http.StatusBadRequest, "userId must be integer")
+		
 		}
 
 		user, err := GetUserById(uint(userId))
 
 		if err != nil {
-			handleFindOneError(c, err, "User", "userId")
+			return handleFindOneError(c, err, "User", "userId")
 		} else {
-			c.JSON(http.StatusOK, user)
+			return c.JSON(user)
 		}
 	})
 }
 
-func handleFindOneError(c *gin.Context, err error, target, by string) {
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		c.JSON(http.StatusBadRequest, fmt.Sprintf("%s not found by given %s", target, by))
-	} else {
-		c.JSON(http.StatusInternalServerError, "Internal Server Error")
-	}
+func handleFindOneError(c *fiber.Ctx, err error, target, by string) error {
 	log.Println(err.Error())
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return c.JSON(http.StatusBadRequest, fmt.Sprintf("%s not found by given %s", target, by))
+	} else {
+		return c.JSON(http.StatusInternalServerError, "Internal Server Error")
+	}
+
 }
