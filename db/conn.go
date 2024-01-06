@@ -1,30 +1,54 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	"moapick/db/models"
 )
 
-var DB *gorm.DB
+var Client *gorm.DB
+
 func InitDB() {
 	var err error
 
-  envError := godotenv.Load()
+	envError := godotenv.Load()
 	if envError != nil {
 		panic("cannot load env")
 	}
+	host := os.Getenv("DB_HOST")
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	port := os.Getenv("DB_PORT")
+	dbname := os.Getenv("DB_NAME")
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s port=%s dbname=%s sslmode=disable", os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"))
-	
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	// Connect to the PostgreSQL server without specifying the database name
+	db, err := sql.Open("postgres", fmt.Sprintf("host=%s user=%s password=%s port=%s sslmode=disable", host, user, password, port))
+	if err != nil {
+		panic(err)
+	}
+	// Create the database if it does not exist
+	_, err = db.Exec(fmt.Sprintf("CREATE DATABASE %s;", dbname))
+	if err != nil {
+		// Ignore the error if the database already exists
+		if !strings.Contains(err.Error(), "already exists") {
+			panic(err)
+		}
+	}
 
+	dsn := fmt.Sprintf("host=%s user=%s password=%s port=%s dbname=%s sslmode=disable", host, user, password, port, dbname)
+	Client, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
 		panic(err)
 	}
-}
 
+	Client.AutoMigrate(&models.User{})
+}

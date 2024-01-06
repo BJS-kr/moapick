@@ -1,5 +1,9 @@
 package user
 
-func GetUser(userId string) (User, error) {
+import (
+	"moapick/db/models"
+)
+
+func GetUser(userId string) (models.User, error) {
 	return GetUserById(userId)
 }

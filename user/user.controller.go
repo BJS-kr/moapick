@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,14 +10,29 @@ import (
 )
 
 func UserController(r *gin.Engine) {
-	r.GET("/user/:userId", func (c *gin.Context) {
-		userId := c.Param("userId")
-		user, error := GetUser(userId)
+	userCont := r.Group("/user")
 
-		if errors.Is(error, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusBadRequest, "User not found by given ID")
-		}
+	userCont.POST("/sing-in", func(ctx *gin.Context) {
 
-		c.JSON(http.StatusOK, user)
 	})
+	userCont.DELETE("/sign-out", func(ctx *gin.Context) {})
+
+	userCont.GET("/:userId", func(c *gin.Context) {
+		userId := c.Param("userId")
+		user, err := GetUser(userId)
+
+		if err != nil {
+			handleFindOneError(c, err, "User", "userId")
+		} else {
+			c.JSON(http.StatusOK, user)
+		}
+	})
+}
+
+func handleFindOneError(c *gin.Context, err error, target, by string) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(http.StatusBadRequest, fmt.Sprintf("%s not found by given %s", target, by))
+	} else {
+		c.JSON(http.StatusInternalServerError, "Internal Server Error")
+	}
 }

@@ -2,21 +2,13 @@ package user
 
 import (
 	"moapick/db"
-
-	"gorm.io/gorm"
+	"moapick/db/models"
 )
 
-type User struct {
-	gorm.Model
-	Name     string
-	Email    string
-	Password string
-}
+func GetUserById(userId string) (models.User, error) {
+	var user models.User
 
-func GetUserById(userId string) (User, error) {
-	var user User
-
-	result := db.DB.First(&user, "id = ?", userId)
+	result := db.Client.First(&user, "id = ?", userId)
 
 	return user, result.Error
 }
