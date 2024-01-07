@@ -39,7 +39,11 @@ func InitDB() {
 	}
 
 	dsn := fmt.Sprintf("host=%s user=%s password=%s port=%s dbname=%s sslmode=disable", host, user, password, port, dbname)
-	Client, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	Client, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+
+	})
+
+	Client.Logger.LogMode(3)
 
 	if err != nil {
 		panic(err)

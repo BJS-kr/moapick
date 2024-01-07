@@ -23,7 +23,7 @@ func main() {
 	db.InitDB()
 
 	config := fiber.Config{
-		Prefork: true,
+		Prefork: false,
 	}
 
 	r := fiber.New(config)
@@ -32,9 +32,8 @@ func main() {
 	r.Use(cors.New())
 	r.Use(logger.New())
 	r.Use(recover.New())
-	routes.SetupRouter(r)
-	// TODO 배포할 때 trusted proxy 설정
-	// r.SetTrustedProxies([]string{})
+
+	routes.SetRouters(r)
 
 	log.Fatal(r.Listen(":8080"))
 }

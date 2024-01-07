@@ -20,8 +20,7 @@ type UpdateArticleTitleBody struct {
 }
 
 func ArticleController(r *fiber.App) {
-	a := r.Group("/article")
-	a.Use(middleware.JwtMiddleware())
+	a := r.Group("/article", middleware.JwtMiddleware())
 
 	a.Post("/", func(c *fiber.Ctx) error {
 		email, ok := c.Locals("email").(string)
@@ -69,7 +68,7 @@ func ArticleController(r *fiber.App) {
 			
 		}
 
-		return c.JSON( articleEntity)
+		return c.Status(fiber.StatusCreated).JSON(articleEntity)
 	})
 
 	a.Get("/all", func(c *fiber.Ctx) error {
@@ -77,14 +76,14 @@ func ArticleController(r *fiber.App) {
 
 		if !ok {
 			log.Println("failed to assert email as string")
-			return c.Status(fiber.StatusInternalServerError).JSON( fiber.Map{"error": "failed to get email"})
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get email"})
 		}
 
 		articles, err := FindArticlesByEmail(email)
 
 		if err != nil {
 			log.Println(err.Error())
-			return c.Status(fiber.StatusInternalServerError).JSON( fiber.Map{"error": "failed to get articles"})
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get articles"})
 		
 		}
 
@@ -95,7 +94,7 @@ func ArticleController(r *fiber.App) {
 		
 		articleId, err := strconv.Atoi(c.Params("articleId"))
 		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON( fiber.Map{"error":"articleId must be integer"})
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error":"articleId must be integer"})
 			
 		}
 
@@ -103,11 +102,30 @@ func ArticleController(r *fiber.App) {
 
 		if err != nil {
 			log.Println(err.Error())
-			return c.Status(fiber.StatusInternalServerError).JSON( fiber.Map{"error": "failed to get article"})
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get article"})
 		
 		}
 
 		return c.JSON(article)
+	})
+
+
+	a.Delete("/all", func(c *fiber.Ctx) error {
+		email, ok := c.Locals("email").(string)
+
+		if !ok {
+			log.Println("failed to assert email as string")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get email"})
+		}
+
+		err := DeleteArticlesByEmail(email)
+
+		if err != nil {
+			log.Println(err.Error())
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to delete articles"})
+		}
+
+		return c.SendStatus(fiber.StatusOK)
 	})
 
 	a.Delete("/:articleId", func(c *fiber.Ctx)error {
@@ -122,35 +140,33 @@ func ArticleController(r *fiber.App) {
 
 		if err != nil {
 			log.Println(err.Error())
-			return c.Status(fiber.StatusInternalServerError).JSON( fiber.Map{"error": "failed to delete article"})
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to delete article"})
 			
 		}
 
 		return c.SendStatus(fiber.StatusOK)
 	})
 
+
 	a.Patch("/title/:articleId", func (c *fiber.Ctx) error {
 		articleId, err := strconv.Atoi(c.Params("articleId"))
 
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error":"articleId must be integer"})
-			
 		}
 
 		updateArticleTitleBody := new(UpdateArticleTitleBody)
 
 		if err := c.BodyParser(updateArticleTitleBody); err != nil {
 			log.Println(err.Error())
-			return c.Status(fiber.StatusBadRequest).JSON( fiber.Map{"error": "unexpected request body"})
-			
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "unexpected request body"})
 		}
 
 		updateErr := UpdateArticleTitleById(uint(articleId), updateArticleTitleBody.Title)
 
 		if updateErr != nil {
-		log.Println(err.Error())
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "failed to update article title"})
-		
+			log.Println(err.Error())
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "failed to update article title"})
 		}
 
 		return c.SendStatus(fiber.StatusOK)

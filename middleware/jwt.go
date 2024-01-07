@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -18,7 +19,7 @@ func JwtMiddleware() fiber.Handler {
 
 		parserOption := jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Name})
 		token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
-			if _, assertionSuccess := t.Method.(*jwt.SigningMethodHMAC); assertionSuccess {
+			if _, assertionSuccess := t.Method.(*jwt.SigningMethodHMAC); !assertionSuccess {
 				return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 			}
 
@@ -26,22 +27,20 @@ func JwtMiddleware() fiber.Handler {
 		}, parserOption)
 
 		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON( fiber.Map{"error": "unexpected access token algorithm"})
-			
+			log.Println(err.Error())
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unexpected access token algorithm"})	
 		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			email, found := claims["email"]
 
 			if !found {
-				return c.Status(fiber.StatusUnauthorized).JSON( fiber.Map{"error": "expected claim missing"})
-			
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "expected claim missing"})
 			}
 
 			c.Locals("email", email)
 		} else {
-			return c.Status(fiber.StatusUnauthorized).JSON( fiber.Map{"error": "unexpected claims found"})
-		
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unexpected claims found"})
 		}
 
 		return c.Next()

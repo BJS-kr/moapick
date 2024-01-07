@@ -7,8 +7,11 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func SetupRouter(r *fiber.App)  {
-
+func SetRouters(r *fiber.App)  {
+	r.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Hello, World 👋!")
+	})
+	
 	user.UserController(r)
 	article.ArticleController(r)
 }
