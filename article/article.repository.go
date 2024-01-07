@@ -20,7 +20,6 @@ func SaveArticle(articleEntity *models.Article) error {
 
 func FindArticlesByEmail(email string) ([]models.Article, error) {
 	var articles []models.Article
-
 	result := db.Client.Find(&articles, "email = ? AND deleted_at = ?", email, nil)
 
 	return articles, result.Error

@@ -6,6 +6,5 @@ import (
 
 type User struct {
 	gorm.Model
-	Name     string `json:"name"`
-	Email    string `gorm:"index:email_unique_idx,unique" json:"email"`
+	Email    string `gorm:"uniqueIndex:email_unique_idx" json:"email"`
 }

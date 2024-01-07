@@ -7,9 +7,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-
-
-func IssueJwt(userEmail string) (string, error) {
+func IssueJwt(userEmail string, userId uint) (string, error) {
 	var (
 		key   []byte
 		token *jwt.Token
@@ -20,6 +18,7 @@ func IssueJwt(userEmail string) (string, error) {
 		jwt.MapClaims{
 			"iss":   "moapick",
 			"email": userEmail,
+			"user_id": userId,
 			"exp":   time.Now().Add(time.Hour * 24).Unix(),
 		})
 

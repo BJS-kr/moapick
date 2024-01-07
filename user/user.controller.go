@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"moapick/db/models"
 	"moapick/middleware"
 	"net/http"
 	"strconv"
@@ -31,11 +32,26 @@ func UserController(r *fiber.App) {
 			return c.Status(fiber.StatusBadRequest).JSON( fiber.Map{"error": err.Error()})
 		}
 
-		if jwt, err := IssueJwt(singInBody.Email); err == nil {
+		newUser := models.User{Email: singInBody.Email}
+		err := CreateUserIfNotExists(&newUser)
+
+		if err != nil {
+			log.Println(err.Error())
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+
+		user, err := GetUserByEmail(singInBody.Email)
+
+		if err != nil {
+			log.Println(err.Error())
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+
+		if jwt, err := IssueJwt(singInBody.Email, user.ID); err == nil {
 			responseBody := JwtAccessToken{AccessToken: jwt}
-			return c.JSON( responseBody)
+			return c.JSON(responseBody)
 		} else {
-			return c.Status(fiber.StatusInternalServerError).JSON( fiber.Map{
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error": "error during sign-in process",
 			})
 		}
