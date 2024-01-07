@@ -8,6 +8,8 @@ import (
 )
 
 func SaveArticle(articleEntity *models.Article) error {
+	// 아티클 저장 기록 삭제시 soft delete이기 때문에 upsert로 처리해야한다.
+	// articles table은 email, title이 unique index이기 때문이다.
 	result := db.Client.Clauses(clause.OnConflict{
 		Columns: []clause.Column{{Name: "email"}, {Name: "title"}},
 		DoUpdates: clause.AssignmentColumns([]string{"article_link", "og_image_link", "updated_at", "deleted_at"}),
