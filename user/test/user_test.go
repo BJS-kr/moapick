@@ -17,9 +17,7 @@ func TestSignIn(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-
   defer resp.Body.Close()
- 
     
   respBody, err := io.ReadAll(resp.Body)
 
