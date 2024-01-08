@@ -23,13 +23,6 @@ func ArticleController(r *fiber.App) {
 	a := r.Group("/article", middleware.JwtMiddleware())
 
 	a.Post("/", func(c *fiber.Ctx) error {
-		userId, userIdOk := c.Locals("userId").(uint)
-
-		if userIdOk {
-			log.Println("failed to get user information")
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get email"})
-		}
-
 		article := new(SaveArticleBody)
 
 		if err := c.BodyParser(article); err != nil {
@@ -46,7 +39,7 @@ func ArticleController(r *fiber.App) {
 		}
 
 		articleEntity := models.Article{
-		UserId:      userId,
+
 		Title:       article.Title,
 		ArticleLink: article.Link,
 		}
@@ -71,14 +64,14 @@ func ArticleController(r *fiber.App) {
 	})
 
 	a.Get("/all", func(c *fiber.Ctx) error {
-		email, ok := c.Locals("email").(string)
+		userId, ok := c.Locals("userId").(uint)
 
 		if !ok {
 			log.Println("failed to assert email as string")
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get email"})
 		}
 
-		articles, err := FindArticlesByEmail(email)
+		articles, err := FindArticlesByUserId(userId)
 
 		if err != nil {
 			log.Println(err.Error())

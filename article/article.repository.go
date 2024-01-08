@@ -4,6 +4,7 @@ import (
 	"moapick/db"
 	"moapick/db/models"
 
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -18,11 +19,14 @@ func SaveArticle(articleEntity *models.Article) error {
 	return result.Error
 }
 
-func FindArticlesByEmail(email string) ([]models.Article, error) {
-	var articles []models.Article
-	result := db.Client.Find(&articles, "email = ? AND deleted_at = ?", email, nil)
+func FindArticlesByUserId(userId uint) ([]models.Article, error) {
+	user := models.User{ Model: gorm.Model{
+		ID: userId,
+	}}
+	
+	result := db.Client.Model(&models.User{}).Preload("Articles").First(&user)
 
-	return articles, result.Error
+	return user.Articles, result.Error
 }
 
 
