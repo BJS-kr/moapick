@@ -23,6 +23,13 @@ func ArticleController(r *fiber.App) {
 	a := r.Group("/article", middleware.JwtMiddleware())
 
 	a.Post("/", func(c *fiber.Ctx) error {
+		userId, ok := c.Locals("userId").(uint)
+
+		if !ok {
+			log.Println("failed to assert user as uint")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get userId"})
+		}
+		
 		article := new(SaveArticleBody)
 
 		if err := c.BodyParser(article); err != nil {
@@ -34,14 +41,14 @@ func ArticleController(r *fiber.App) {
 
 		if !isValidUrl {
 			log.Println("invalid url")
-			return c.Status(fiber.StatusBadRequest).JSON( fiber.Map{"error": "invalid url"})
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid url"})
 		
 		}
 
 		articleEntity := models.Article{
-
-		Title:       article.Title,
-		ArticleLink: article.Link,
+			UserId:      userId,
+			Title:       article.Title,
+			ArticleLink: article.Link,
 		}
 
 		og, err := opengraph.Fetch(article.Link)
@@ -83,8 +90,8 @@ func ArticleController(r *fiber.App) {
 	})
 
 	a.Get("/:articleId", func(c *fiber.Ctx)error {
-		
 		articleId, err := strconv.Atoi(c.Params("articleId"))
+
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error":"articleId must be integer"})
 			

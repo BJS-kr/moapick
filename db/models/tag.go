@@ -5,6 +5,6 @@ import "gorm.io/gorm"
 type Tag struct {
 	gorm.Model
 	Title    string    `json:"title"`
-	User   	 User      `json:"user"`
-	Articles []Article `json:"articles"`
+	UserID   uint      `json:"user_id"`
+	Articles []*Article `gorm:"many2many:article_tags;" json:"articles"`
 }
