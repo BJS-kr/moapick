@@ -49,5 +49,5 @@ func InitDB() {
 		panic(err)
 	}
 
-	Client.AutoMigrate(&models.User{}, &models.Article{})
+	Client.AutoMigrate(&models.User{}, &models.Tag{}, &models.Article{})
 }

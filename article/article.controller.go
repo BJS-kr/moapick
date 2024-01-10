@@ -20,11 +20,12 @@ type UpdateArticleTitleBody struct {
 }
 
 func ArticleController(r *fiber.App) {
-	a := r.Group("/article", middleware.JwtMiddleware())
+	a := r.Group("/article")
+	a.Use(middleware.JwtMiddleware())
 
 	a.Post("/", func(c *fiber.Ctx) error {
 		userId, ok := c.Locals("userId").(uint)
-
+		
 		if !ok {
 			log.Println("failed to assert user as uint")
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get userId"})
@@ -42,7 +43,6 @@ func ArticleController(r *fiber.App) {
 		if !isValidUrl {
 			log.Println("invalid url")
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid url"})
-		
 		}
 
 		articleEntity := models.Article{
@@ -64,7 +64,6 @@ func ArticleController(r *fiber.App) {
 		if saveErr != nil {
 			log.Println(err.Error())
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "failed to save article"})
-			
 		}
 
 		return c.Status(fiber.StatusCreated).JSON(articleEntity)
@@ -83,13 +82,12 @@ func ArticleController(r *fiber.App) {
 		if err != nil {
 			log.Println(err.Error())
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get articles"})
-		
 		}
 
-		return c.JSON( articles)
+		return c.JSON(articles)
 	})
 
-	a.Get("/:articleId", func(c *fiber.Ctx)error {
+	a.Get("/:articleId", func(c *fiber.Ctx) error {
 		articleId, err := strconv.Atoi(c.Params("articleId"))
 
 		if err != nil {
@@ -102,7 +100,6 @@ func ArticleController(r *fiber.App) {
 		if err != nil {
 			log.Println(err.Error())
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get article"})
-		
 		}
 
 		return c.JSON(article)
@@ -110,14 +107,14 @@ func ArticleController(r *fiber.App) {
 
 
 	a.Delete("/all", func(c *fiber.Ctx) error {
-		email, ok := c.Locals("email").(string)
+		userId, ok := c.Locals("userId").(uint)
 
 		if !ok {
-			log.Println("failed to assert email as string")
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get email"})
+			log.Println("failed to assert userId as uint")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get userId"})
 		}
 
-		err := DeleteArticlesByEmail(email)
+		err := DeleteArticlesByUserId(userId)
 
 		if err != nil {
 			log.Println(err.Error())
@@ -132,7 +129,6 @@ func ArticleController(r *fiber.App) {
 
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "articleId must be integer"})
-			
 		}
 
 		err = DeleteArticleById(uint(articleId))

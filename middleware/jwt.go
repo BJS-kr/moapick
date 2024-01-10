@@ -34,12 +34,19 @@ func JwtMiddleware() fiber.Handler {
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			email, emailFound := claims["email"]
 			userId, userIdFound := claims["user_id"]
+
 			if !emailFound || !userIdFound {
 				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "expected claim missing"})
 			}
+			
+			floatUserId, ok := userId.(float64)
 
+			if !ok {
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error":"invalid user id"})
+			}
+			
 			c.Locals("email", email)
-			c.Locals("userId", userId)
+			c.Locals("userId", uint(floatUserId))
 		} else {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unexpected claims found"})
 		}
