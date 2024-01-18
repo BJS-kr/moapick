@@ -11,7 +11,7 @@ import (
 )
 
 type SaveArticleBody struct {
-	Link string `json:"link"`
+	Link  string `json:"link"`
 	Title string `json:"title"`
 }
 
@@ -25,12 +25,12 @@ func ArticleController(r *fiber.App) {
 
 	a.Post("/", func(c *fiber.Ctx) error {
 		userId, ok := c.Locals("userId").(uint)
-		
+
 		if !ok {
 			log.Println("failed to assert user as uint")
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get userId"})
 		}
-		
+
 		article := new(SaveArticleBody)
 
 		if err := c.BodyParser(article); err != nil {
@@ -71,7 +71,6 @@ func ArticleController(r *fiber.App) {
 
 	a.Get("/all", func(c *fiber.Ctx) error {
 		userId, ok := c.Locals("userId").(uint)
-
 		if !ok {
 			log.Println("failed to assert email as string")
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get email"})
@@ -91,8 +90,8 @@ func ArticleController(r *fiber.App) {
 		articleId, err := strconv.Atoi(c.Params("articleId"))
 
 		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error":"articleId must be integer"})
-			
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "articleId must be integer"})
+
 		}
 
 		article, err := FindArticleById(uint(articleId))
@@ -104,7 +103,6 @@ func ArticleController(r *fiber.App) {
 
 		return c.JSON(article)
 	})
-
 
 	a.Delete("/all", func(c *fiber.Ctx) error {
 		userId, ok := c.Locals("userId").(uint)
@@ -124,7 +122,7 @@ func ArticleController(r *fiber.App) {
 		return c.SendStatus(fiber.StatusOK)
 	})
 
-	a.Delete("/:articleId", func(c *fiber.Ctx)error {
+	a.Delete("/:articleId", func(c *fiber.Ctx) error {
 		articleId, err := strconv.Atoi(c.Params("articleId"))
 
 		if err != nil {
@@ -135,19 +133,18 @@ func ArticleController(r *fiber.App) {
 
 		if err != nil {
 			log.Println(err.Error())
+
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to delete article"})
-			
 		}
 
 		return c.SendStatus(fiber.StatusOK)
 	})
 
-
-	a.Patch("/title/:articleId", func (c *fiber.Ctx) error {
+	a.Patch("/title/:articleId", func(c *fiber.Ctx) error {
 		articleId, err := strconv.Atoi(c.Params("articleId"))
 
 		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error":"articleId must be integer"})
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "articleId must be integer"})
 		}
 
 		updateArticleTitleBody := new(UpdateArticleTitleBody)
