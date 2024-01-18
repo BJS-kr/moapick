@@ -4,8 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"moapick/db/models"
+	"moapick/test_utils"
+	"moapick/user"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const DEFAULT_PATH string = "http://localhost:8080/tag"
@@ -20,18 +25,30 @@ func TestTagController(t *testing.T) {
 
 	defer signInResp.Body.Close()
 
-	accessTokenBody := make(map[string]string)
+	accessTokenBody := user.JwtAccessToken{}
 
 	json.NewDecoder(signInResp.Body).Decode(&accessTokenBody)
-	accessToken, ok := accessTokenBody["access_token"]
+	accessToken := accessTokenBody.AccessToken
+	tester := test_utils.MakeHTTPTester(accessToken)
 
-	if !ok {
-		t.Error("failed to get access token")
-	}
-	t.Run("add multiple user custom tag", func(t *testing.T) {
+	var targetArticleId, targetTagId int
+	t.Run("add user's custom tag", func(t *testing.T) {
+		tester.POST(DEFAULT_PATH, `{"title": "tag 1"}`)
+		tester.POST(DEFAULT_PATH, `{"title": "tag 2"}`)
 
+		getAllResp := tester.GET(fmt.Sprintf("%s/%s", DEFAULT_PATH, "all"))
+
+		defer getAllResp.Body.Close()
+
+		tags := make([]models.Tag, 0)
+		json.NewDecoder(getAllResp.Body).Decode(&tags)
+
+		assert.Equal(t, 2, len(tags))
 	})
-	t.Run("attach multiple tags to an article", func(t *testing.T) {})
+
+	t.Run("attach multiple tags to an article", func(t *testing.T) {
+		tester.POST(fmt.Sprintf("%s/%s", DEFAULT_PATH, "attach"), fmt.Sprintf(`{"article_id": %d, "tag_id": %d}`))
+	})
 	t.Run("detach a tag from an article", func(t *testing.T) {})
 
 }

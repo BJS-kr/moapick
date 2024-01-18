@@ -27,8 +27,8 @@ func main() {
 	}
 
 	r := fiber.New(config)
-	
-  r.Use(helmet.New())
+
+	r.Use(helmet.New())
 	r.Use(cors.New())
 	r.Use(logger.New())
 	r.Use(recover.New())

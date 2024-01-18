@@ -1,15 +1,15 @@
-package testutils
+package test_utils
 
 import (
-	"io"
+	"bytes"
 	"net/http"
 )
 
 type Tester struct {
 	GET    func(path string) *http.Response
-	PUT    func(path string, body io.Reader) *http.Response
-	POST   func(path string, body io.Reader) *http.Response
-	PATCH  func(path string, body io.Reader) *http.Response
+	PUT    func(path string, rawBody string) *http.Response
+	POST   func(path string, rawBody string) *http.Response
+	PATCH  func(path string, rawBody string) *http.Response
 	DELETE func(path string) *http.Response
 }
 
@@ -32,8 +32,8 @@ func MakeHTTPTester(accessToken string) Tester {
 
 			return res
 		},
-		POST: func(path string, body io.Reader) *http.Response {
-			req, err := http.NewRequest("POST", path, body)
+		POST: func(path string, body string) *http.Response {
+			req, err := http.NewRequest("POST", path, makeRawBody(body))
 
 			setHeaders(req, accessToken)
 
@@ -49,8 +49,8 @@ func MakeHTTPTester(accessToken string) Tester {
 
 			return res
 		},
-		PUT: func(path string, body io.Reader) *http.Response {
-			req, err := http.NewRequest("POST", path, body)
+		PUT: func(path string, body string) *http.Response {
+			req, err := http.NewRequest("POST", path, makeRawBody(body))
 
 			setHeaders(req, accessToken)
 
@@ -66,8 +66,8 @@ func MakeHTTPTester(accessToken string) Tester {
 
 			return res
 		},
-		PATCH: func(path string, body io.Reader) *http.Response {
-			req, err := http.NewRequest("POST", path, body)
+		PATCH: func(path string, rawBody string) *http.Response {
+			req, err := http.NewRequest("POST", path, makeRawBody(rawBody))
 
 			setHeaders(req, accessToken)
 
@@ -101,6 +101,10 @@ func MakeHTTPTester(accessToken string) Tester {
 			return res
 		},
 	}
+}
+
+func makeRawBody(rawBody string) *bytes.Buffer {
+	return bytes.NewBuffer([]byte(rawBody))
 }
 
 func setHeaders(req *http.Request, accessToken string) {
