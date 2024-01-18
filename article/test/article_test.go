@@ -6,16 +6,35 @@ import (
 	"fmt"
 	"moapick/db/models"
 	"moapick/test_utils"
+	"moapick/user"
 	"net/http"
 	"testing"
+
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 
 	"github.com/stretchr/testify/assert"
 )
 
 const DEFAULT_PATH string = "http://localhost:8080/article"
-
+const USER_EMAIL string = "article_test@test.com"
 func TestArticleController(t *testing.T) {
-	signInResp, err := http.Post("http://localhost:8080/user/sign-in", "application/json", bytes.NewBuffer([]byte(`{"email": "test@test.com"}`)))
+	var targetArticleId uint
+
+	godotenv.Load("test.env")
+
+	db := test_utils.GetRawDB()
+	defer db.Close()
+
+	t.Cleanup(func ()  {
+		_, err := db.Exec(fmt.Sprintf("DELETE FROM articles WHERE email = %s", USER_EMAIL))
+	
+		if err!=nil {
+			panic(err)
+		}
+	})
+
+	signInResp, err := http.Post("http://localhost:8080/user/sign-in", "application/json", bytes.NewBuffer([]byte(fmt.Sprintf(`{"email": "%s"})`, USER_EMAIL))))
 
 	if err != nil {
 		t.Error(err.Error())
@@ -23,17 +42,11 @@ func TestArticleController(t *testing.T) {
 
 	defer signInResp.Body.Close()
 
-	accessTokenBody := make(map[string]string)
+	accessTokenBody := user.JwtAccessToken{}
 
 	json.NewDecoder(signInResp.Body).Decode(&accessTokenBody)
-	accessToken, ok := accessTokenBody["access_token"]
-
-	if !ok {
-		t.Error("failed to get access token")
-	}
-
-	var targetArticleId uint
-	tester := test_utils.MakeHTTPTester(accessToken)
+	
+	tester := test_utils.MakeHTTPTester(accessTokenBody.AccessToken)
 	t.Run("save article", func(t *testing.T) {
 		saveResp := tester.POST(DEFAULT_PATH, `{"link":"https://stackoverflow.com", "title":"개발 핵꿀팁 저장소"}`)
 

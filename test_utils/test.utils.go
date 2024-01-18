@@ -2,7 +2,10 @@ package test_utils
 
 import (
 	"bytes"
+	"database/sql"
+	"fmt"
 	"net/http"
+	"os"
 )
 
 type Tester struct {
@@ -110,4 +113,20 @@ func makeRawBody(rawBody string) *bytes.Buffer {
 func setHeaders(req *http.Request, accessToken string) {
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 	req.Header.Set("Content-Type", "application/json")
+}
+
+func GetRawDB() *sql.DB {
+	host := os.Getenv("DB_HOST")
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	port := os.Getenv("DB_PORT")
+	dbname := os.Getenv("DB_NAME")
+
+	db, err := sql.Open("postgres", fmt.Sprintf("host=%s user=%s password=%s port=%s dbname=%s sslmode=disable", host, user, password, port, dbname))
+
+	if err != nil {
+		panic(err)
+	}
+
+	return db
 }

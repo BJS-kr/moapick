@@ -23,9 +23,8 @@ func InitDB() {
 	port := os.Getenv("DB_PORT")
 	dbname := os.Getenv("DB_NAME")
 
-	fmt.Println(host, user, password, port, dbname)
-
 	db, err := sql.Open("postgres", fmt.Sprintf("host=%s user=%s password=%s port=%s sslmode=disable", host, user, password, port))
+	
 	if err != nil {
 		panic(err)
 	}
@@ -51,3 +50,4 @@ func InitDB() {
 
 	Client.AutoMigrate(&models.User{}, &models.Tag{}, &models.Article{})
 }
+
