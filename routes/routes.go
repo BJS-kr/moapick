@@ -2,6 +2,7 @@ package routes
 
 import (
 	"moapick/article"
+	"moapick/tag"
 	"moapick/user"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,4 +15,5 @@ func SetRouters(r *fiber.App)  {
 	
 	user.UserController(r)
 	article.ArticleController(r)
+	tag.TagController(r)
 }

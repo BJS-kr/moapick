@@ -21,20 +21,21 @@ const USER_EMAIL string = "article_test@test.com"
 func TestArticleController(t *testing.T) {
 	var targetArticleId uint
 
-	godotenv.Load("test.env")
+	godotenv.Load("../../test.env")
 
 	db := test_utils.GetRawDB()
-	defer db.Close()
 
 	t.Cleanup(func ()  {
-		_, err := db.Exec(fmt.Sprintf("DELETE FROM articles WHERE email = %s", USER_EMAIL))
+		_, err := db.Exec("DELETE FROM articles;")
 	
 		if err!=nil {
 			panic(err)
 		}
+
+		db.Close()
 	})
 
-	signInResp, err := http.Post("http://localhost:8080/user/sign-in", "application/json", bytes.NewBuffer([]byte(fmt.Sprintf(`{"email": "%s"})`, USER_EMAIL))))
+	signInResp, err := http.Post("http://localhost:8080/user/sign-in", "application/json", bytes.NewBuffer([]byte(fmt.Sprintf(`{"email": "%s"}`, USER_EMAIL))))
 
 	if err != nil {
 		t.Error(err.Error())
@@ -113,10 +114,10 @@ func TestArticleController(t *testing.T) {
 		article := models.Article{}
 		json.NewDecoder(getResp.Body).Decode(&article)
 
-		assert.Equal(t, article.Title, "내 맘대로 정해보는 타이틀 후후", "title must be updated as expected")
+		assert.Equal(t, "내 맘대로 정해보는 타이틀 후후", article.Title, "title must be updated as expected")
 	})
 
-	t.Run("delete all article", func(t *testing.T) {
+	t.Run("delete all articles of a user", func(t *testing.T) {
 		tester.DELETE(fmt.Sprintf("%s/%s", DEFAULT_PATH, "all"))
 		getAllResp := tester.GET(fmt.Sprintf("%s/%s", DEFAULT_PATH, "all"))
 
@@ -126,6 +127,6 @@ func TestArticleController(t *testing.T) {
 
 		json.NewDecoder(getAllResp.Body).Decode(&articles)
 
-		assert.Equal(t, 0, len(articles), "articles length must be zero because all articles have been deleted")
+		assert.Equal(t, 0, len(articles), "articles length must be zero because all articles of a user have been deleted")
 	})
 }

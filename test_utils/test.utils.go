@@ -53,7 +53,7 @@ func MakeHTTPTester(accessToken string) Tester {
 			return res
 		},
 		PUT: func(path string, body string) *http.Response {
-			req, err := http.NewRequest("POST", path, makeRawBody(body))
+			req, err := http.NewRequest("PUT", path, makeRawBody(body))
 
 			setHeaders(req, accessToken)
 
@@ -70,7 +70,7 @@ func MakeHTTPTester(accessToken string) Tester {
 			return res
 		},
 		PATCH: func(path string, rawBody string) *http.Response {
-			req, err := http.NewRequest("POST", path, makeRawBody(rawBody))
+			req, err := http.NewRequest("PATCH", path, makeRawBody(rawBody))
 
 			setHeaders(req, accessToken)
 
@@ -87,7 +87,7 @@ func MakeHTTPTester(accessToken string) Tester {
 			return res
 		},
 		DELETE: func(path string) *http.Response {
-			req, err := http.NewRequest("GET", path, nil)
+			req, err := http.NewRequest("DELETE", path, nil)
 
 			setHeaders(req, accessToken)
 
