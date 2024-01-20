@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"moapick/db/models"
 	"moapick/test_utils"
 	"moapick/user"
 	"net/http"
 	"testing"
 
+	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,13 +21,21 @@ const ARTICLE string = DEFAULT_PATH + "/article"
 const USER_EMAIL string = "tag_test@test.com"
 
 func TestTagController(t *testing.T) {
+	godotenv.Load("../../test.env")
 	userTags := make([]models.Tag, 0)
 
 	db := test_utils.GetRawDB()
 
 	t.Cleanup(func() {
-		db.Exec("DELETE FROM articles;")
-		db.Exec("DELETE FROM tags;")
+		_, err := db.Exec("DELETE FROM articles;")
+		if err != nil {
+			log.Println(err.Error())
+		}
+		_, err2 := db.Exec("DELETE FROM tags;")
+
+		if err2 != nil {
+			log.Println(err2.Error())
+		}
 
 		db.Close()
 	})
@@ -51,7 +61,7 @@ func TestTagController(t *testing.T) {
 		panic("test setup failed")
 	}
 
-	articles :=make([]models.Article, 0)
+	articles := make([]models.Article, 0)
 	articlesResp := tester.GET(fmt.Sprintf("%s/%s", ARTICLE, "all"))
 	json.NewDecoder(articlesResp.Body).Decode(&articles)
 
@@ -65,7 +75,7 @@ func TestTagController(t *testing.T) {
 		tester.POST(TAG, `{"title": "tag 1"}`)
 		tester.POST(TAG, `{"title": "tag 2"}`)
 
-		getAllResp := tester.GET(fmt.Sprintf("%s/%s", ARTICLE, "all"))
+		getAllResp := tester.GET(fmt.Sprintf("%s/%s", TAG, "all"))
 
 		defer getAllResp.Body.Close()
 
@@ -107,5 +117,18 @@ func TestTagController(t *testing.T) {
 
 		// article에 속한 tag를 삭제했으므로 article을 불러왔을 때 태그가 없어야 한다
 		// 물론 모든 태그를 조회했을 때도 존재하지 않아야 한다.
+		getArticleResp := tester.GET(fmt.Sprintf("%s/%d", ARTICLE, targetArticleId))
+		getAllTagsResp := tester.GET(fmt.Sprintf("%s/%s", TAG, "all"))
+
+		article := models.Article{}
+		tags := make([]models.Tag, 0)
+
+		json.NewDecoder(getArticleResp.Body).Decode(&article)
+		json.NewDecoder(getAllTagsResp.Body).Decode(&tags)
+
+		assert.Equal(t, 0, len(article.Tags))
+		assert.Equal(t, 0, len(tags))
 	})
+
+	t.Run("get articles of same tag", func(t *testing.T) {})
 }
