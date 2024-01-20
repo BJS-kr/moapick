@@ -2,7 +2,6 @@ package article
 
 import (
 	"log"
-	"moapick/db/models"
 	"moapick/middleware"
 	"strconv"
 
@@ -31,42 +30,38 @@ func ArticleController(r *fiber.App) {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get userId"})
 		}
 
-		article := new(SaveArticleBody)
+		articleBody := new(SaveArticleBody)
 
-		if err := c.BodyParser(article); err != nil {
+		if err := c.BodyParser(articleBody); err != nil {
 			log.Println(err.Error())
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "unexpected request body"})
 		}
 
-		isValidUrl := IsValidURL(article.Link)
+		isValidUrl := IsValidURL(articleBody.Link)
 
 		if !isValidUrl {
 			log.Println("invalid url")
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid url"})
 		}
 
-		articleEntity := models.Article{
-			UserId:      userId,
-			Title:       article.Title,
-			ArticleLink: article.Link,
-		}
+		ogImageLink := ""
 
-		og, err := opengraph.Fetch(article.Link)
+		og, err := opengraph.Fetch(articleBody.Link)
 
 		if err == nil {
 			if len(og.Image) > 0 {
-				articleEntity.OgImageLink = og.Image[0].URL
+				ogImageLink = og.Image[0].URL
 			}
 		}
 
-		saveErr := SaveArticle(&articleEntity)
+		saveErr := SaveArticle(userId, articleBody, ogImageLink)
 
 		if saveErr != nil {
 			log.Println(err.Error())
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "failed to save article"})
 		}
 
-		return c.Status(fiber.StatusCreated).JSON(articleEntity)
+		return c.SendStatus(fiber.StatusCreated)
 	})
 
 	a.Get("/all", func(c *fiber.Ctx) error {
@@ -90,8 +85,8 @@ func ArticleController(r *fiber.App) {
 		articleId, err := strconv.Atoi(c.Params("articleId"))
 
 		if err != nil {
+			log.Panicln(err.Error())
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "articleId must be integer"})
-
 		}
 
 		article, err := FindArticleById(uint(articleId))
