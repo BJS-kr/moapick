@@ -4,6 +4,7 @@ import (
 	"moapick/db"
 	"moapick/db/models"
 
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -26,14 +27,20 @@ func SaveArticle(userId uint, saveArticleBody *SaveArticleBody, ogImageLink stri
 
 func FindArticlesByUserId(userId uint) ([]models.Article, error) {
 	var articles []models.Article
-	result := db.Client.Where("user_id = ?", userId).Preload("Tags").Find(&articles)
+	result := db.Client.Where("user_id = ?", userId).Preload("Tags", func(db *gorm.DB) *gorm.DB {
+		// select한다고 해서 return 값에서 select된 필드만 들어가는 것은 아니다.
+		// 없는 값은 zero value가 들어간다.정말 원하는 필드만 전달하기 위해선 return dto가 필수
+		return db.Select("id", "title", "created_at")
+	}).Find(&articles)
 
 	return articles, result.Error
 }
 
 func FindArticleById(articleId uint) (models.Article, error) {
 	var article models.Article
-	result := db.Client.Where("id = ?", articleId).Preload("Tags").First(&article)
+	result := db.Client.Where("id = ?", articleId).Preload("Tags", func (db *gorm.DB)  *gorm.DB{
+		return db.Select("id", "title", "created_at")
+	}).First(&article)
 
 	return article, result.Error
 }

@@ -24,7 +24,6 @@ func TagController(r *fiber.App) {
 		userId, ok := c.Locals("userId").(uint)
 
 		if !ok {
-
 			log.Println("failed to assert user as uint")
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get userId"})
 		}

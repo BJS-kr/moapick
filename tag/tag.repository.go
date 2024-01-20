@@ -39,9 +39,7 @@ func IsTagBelongsToUser(userId, tagId uint) (bool, error) {
 
 func AttachTagToArticle(attachBody *AttachBody) error {
 	articleEntity := models.Article{
-		Model: gorm.Model{
-			ID: attachBody.ArticleId,
-		},
+		ID: attachBody.ArticleId,
 	}
 
 	return db.Client.Model(&articleEntity).Association("Tags").Append(&models.Tag{ID: attachBody.TagId})
