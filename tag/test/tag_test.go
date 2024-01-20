@@ -27,13 +27,16 @@ func TestTagController(t *testing.T) {
 	db := test_utils.GetRawDB()
 
 	t.Cleanup(func() {
-		_, err := db.Exec("DELETE FROM articles;")
+		_, err := db.Exec("DELETE FROM article_tags;")
 		if err != nil {
 			log.Println(err.Error())
 		}
-		_, err2 := db.Exec("DELETE FROM tags;")
-
+		_, err2 := db.Exec("DELETE FROM articles;")
 		if err2 != nil {
+			log.Println(err.Error())
+		}
+		_, err3 := db.Exec("DELETE FROM tags;")
+		if err3 != nil {
 			log.Println(err2.Error())
 		}
 
@@ -93,11 +96,12 @@ func TestTagController(t *testing.T) {
 
 		getArticleResp := tester.GET(fmt.Sprintf("%s/%d", ARTICLE, targetArticleId))
 
-		article := models.Article{}
+		article := make(map[string]interface{})
 		json.NewDecoder(getArticleResp.Body).Decode(&article)
 
-		fmt.Println(article.Tags)
-		assert.Equal(t, 2, len(article.Tags))
+		tags := article["tags"].([]interface{})
+
+		assert.Equal(t, 2, len(tags))
 	})
 
 	t.Run("detach a tag from an article", func(t *testing.T) {
