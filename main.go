@@ -5,7 +5,8 @@ import (
 	"moapick/db"
 	"moapick/routes"
 
-	_ "github.com/BJS-kr/moapick/tree/main/docs"
+	_ "moapick/docs"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/helmet"
@@ -35,7 +36,7 @@ func main() {
 	r.Use(logger.New())
 	r.Use(recover.New())
 
-	r.Get("/swagger/*", swagger.HandlerDefault) // default
+	r.Get("/docs/*", swagger.HandlerDefault)
 	routes.SetRouters(r)
 
 	log.Fatal(r.Listen(":8080"))
