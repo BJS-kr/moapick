@@ -60,3 +60,17 @@ func DeleteTagAndItsAssociations(tagId uint) error {
 
 	return db.Client.Delete(&tagEntity, tagId).Error
 }
+
+func GetArticlesByTagId(tagId uint) ([]*models.Article, error) {
+	tagEntity := models.Tag{}
+
+	err := db.Client.Where("id = ?", tagId).Preload("Articles", func (db *gorm.DB)  *gorm.DB {
+		return db.Select("id", "created_at", "updated_at", "user_id", "title", "article_link", "og_image_link")
+	}).First(&tagEntity).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return tagEntity.Articles, nil
+}

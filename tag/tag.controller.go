@@ -146,4 +146,40 @@ func TagController(r *fiber.App) {
 
 		return c.SendStatus(fiber.StatusOK)
 	})
+
+	t.Get("/articles/:tagId", func(c *fiber.Ctx) error {
+		userId, ok := c.Locals("userId").(uint)
+
+		if !ok {
+			log.Println("failed to assert userId as uint")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get user id"})
+		}
+		
+		tagId, err := strconv.Atoi(c.Params("tagId"))
+
+		if err != nil {
+			log.Println(err.Error())
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "failed to get tag id"})
+		}
+
+		belongsToUser, err := IsTagBelongsToUser(userId, uint(tagId))
+
+		if !belongsToUser {
+			if err != nil {
+				log.Println(err.Error())
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get articles by tag"})
+			} else {
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "tag does not belongs to user"})
+			}
+		}
+	
+		articlesByTag, err := GetArticlesByTagId(uint(tagId))
+
+		if err != nil {
+			log.Println(err.Error())
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error":"failed to find articles by tag"})
+		}
+
+		return c.Status(fiber.StatusOK).JSON(articlesByTag)
+	})
 }
