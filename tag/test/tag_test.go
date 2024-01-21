@@ -21,6 +21,8 @@ const ARTICLE string = DEFAULT_PATH + "/article"
 const USER_EMAIL string = "tag_test@test.com"
 
 func TestTagController(t *testing.T) {
+	var targetTagId uint
+
 	godotenv.Load("../../test.env")
 	userTags := make([]models.Tag, 0)
 
@@ -58,9 +60,10 @@ func TestTagController(t *testing.T) {
 	accessToken := accessTokenBody.AccessToken
 	tester := test_utils.MakeHTTPTester(accessToken)
 
-	articleResp := tester.POST("http://localhost:8080/article", `{"link":"https://medium.com", "title":"개발 아티클이 많아요"}`)
+	articleResp1 := tester.POST(ARTICLE, `{"link":"https://medium.com", "title":"개발 아티클이 많아요"}`)
+	articleResp2 := tester.POST(ARTICLE, `{"link":"https://google.com", "title":"검색하기 좋아요"}`)
 
-	if articleResp.StatusCode != 201 {
+	if articleResp1.StatusCode != 201 || articleResp2.StatusCode != 201 {
 		panic("test setup failed")
 	}
 
@@ -68,11 +71,12 @@ func TestTagController(t *testing.T) {
 	articlesResp := tester.GET(fmt.Sprintf("%s/%s", ARTICLE, "all"))
 	json.NewDecoder(articlesResp.Body).Decode(&articles)
 
-	if len(articles) != 1 {
+	if len(articles) != 2 {
 		panic("test setup failed")
 	}
 
-	targetArticleId := articles[0].ID
+	targetArticle1Id := articles[0].ID
+	targetArticle2Id := articles[1].ID
 
 	t.Run("add user's custom tag", func(t *testing.T) {
 		tester.POST(TAG, `{"title": "tag 1"}`)
@@ -91,22 +95,22 @@ func TestTagController(t *testing.T) {
 	})
 
 	t.Run("attach tag to an article. an article can have multiple tags", func(t *testing.T) {
-		tester.PATCH(fmt.Sprintf("%s/%s", TAG, "attach"), fmt.Sprintf(`{"article_id": %d, "tag_id": %d}`, targetArticleId, userTags[0].ID))
-		tester.PATCH(fmt.Sprintf("%s/%s", TAG, "attach"), fmt.Sprintf(`{"article_id": %d, "tag_id": %d}`, targetArticleId, userTags[1].ID))
+		tester.PATCH(fmt.Sprintf("%s/%s", TAG, "attach"), fmt.Sprintf(`{"article_id": %d, "tag_id": %d}`, targetArticle1Id, userTags[0].ID))
+		tester.PATCH(fmt.Sprintf("%s/%s", TAG, "attach"), fmt.Sprintf(`{"article_id": %d, "tag_id": %d}`, targetArticle1Id, userTags[1].ID))
 
-		getArticleResp := tester.GET(fmt.Sprintf("%s/%d", ARTICLE, targetArticleId))
+		getArticleResp := tester.GET(fmt.Sprintf("%s/%d", ARTICLE, targetArticle1Id))
 
 		article := make(map[string]interface{})
 		json.NewDecoder(getArticleResp.Body).Decode(&article)
 
-		tags := article["tags"].([]interface{})
+		articleTags := article["tags"].([]interface{})
 
-		assert.Equal(t, 2, len(tags))
+		assert.Equal(t, 2, len(articleTags))
 	})
 
 	t.Run("detach a tag from an article", func(t *testing.T) {
-		tester.PATCH(fmt.Sprintf("%s/%s", TAG, "detach"), fmt.Sprintf(`{"article_id": %d, "tag_id": %d}`, targetArticleId, userTags[1].ID))
-		getArticleResp := tester.GET(fmt.Sprintf("%s/%d", ARTICLE, targetArticleId))
+		tester.PATCH(fmt.Sprintf("%s/%s", TAG, "detach"), fmt.Sprintf(`{"article_id": %d, "tag_id": %d}`, targetArticle1Id, userTags[1].ID))
+		getArticleResp := tester.GET(fmt.Sprintf("%s/%d", ARTICLE, targetArticle1Id))
 
 		article := models.Article{}
 		json.NewDecoder(getArticleResp.Body).Decode(&article)
@@ -120,7 +124,7 @@ func TestTagController(t *testing.T) {
 
 		// article에 속한 tag를 삭제했으므로 article을 불러왔을 때 태그가 없어야 한다
 		// 물론 모든 태그를 조회했을 때도 존재하지 않아야 한다.
-		getArticleResp := tester.GET(fmt.Sprintf("%s/%d", ARTICLE, targetArticleId))
+		getArticleResp := tester.GET(fmt.Sprintf("%s/%d", ARTICLE, targetArticle1Id))
 		getAllTagsResp := tester.GET(fmt.Sprintf("%s/%s", TAG, "all"))
 
 		article := models.Article{}
@@ -129,9 +133,24 @@ func TestTagController(t *testing.T) {
 		json.NewDecoder(getArticleResp.Body).Decode(&article)
 		json.NewDecoder(getAllTagsResp.Body).Decode(&tags)
 
+		// 총 두 개의 user custom tag 중, 아티클에 붙어있던 tag를 삭제했으니 
+		// article에는 태그가 없어지고
+		// tag의 총 갯수는 하나가 된다.
 		assert.Equal(t, 0, len(article.Tags))
-		assert.Equal(t, 0, len(tags))
+		assert.Equal(t, 1, len(tags))
+
+		targetTagId = tags[0].ID
 	})
 
-	t.Run("get articles of same tag", func(t *testing.T) {})
+	t.Run("get users's articles by tag", func(t *testing.T) {
+		tester.PATCH(fmt.Sprintf("%s/%s", TAG, "attach"), fmt.Sprintf(`{"article_id": %d, "tag_id": %d}`, targetArticle1Id, targetTagId))
+		tester.PATCH(fmt.Sprintf("%s/%s", TAG, "attach"), fmt.Sprintf(`{"article_id": %d, "tag_id": %d}`, targetArticle2Id, targetTagId))
+
+		getArticlesByTagResp := tester.GET(fmt.Sprintf("%s/%s/%d", TAG, "articles", targetTagId))
+
+		articles := make([]models.Article, 0)
+		json.NewDecoder(getArticlesByTagResp.Body).Decode(&articles)
+
+		assert.Equal(t, 2, len(articles))
+	})
 }
