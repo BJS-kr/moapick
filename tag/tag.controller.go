@@ -3,6 +3,7 @@ package tag
 import (
 	"log"
 	"moapick/middleware"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -11,7 +12,7 @@ type TagBody struct {
 	Title string `json:"title"`
 }
 
-type AttachBody struct {
+type ArticleIdAndTagId struct {
 	ArticleId uint `json:"article_id"`
 	TagId     uint `json:"tag_id"`
 }
@@ -71,7 +72,7 @@ func TagController(r *fiber.App) {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get userId"})
 		}
 
-		attachBody := new(AttachBody)
+		attachBody := new(ArticleIdAndTagId)
 
 		if err := c.BodyParser(attachBody); err != nil {
 			log.Println(err.Error())
@@ -98,10 +99,51 @@ func TagController(r *fiber.App) {
 	})
 
 	t.Patch("/detach", func(c *fiber.Ctx) error {
-		return c.SendStatus(400)
+		detachBody := new(ArticleIdAndTagId)
+
+		if err := c.BodyParser(detachBody); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "unexpected request body"})
+		}
+
+		if detachErr := DetachTagFromArticle(detachBody); detachErr != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to detach a tag"})
+		}
+
+		return c.SendStatus(fiber.StatusOK)
 	})
 
 	t.Delete("/:tagId", func(c *fiber.Ctx) error {
-		return c.SendStatus(400)
+		userId, ok := c.Locals("userId").(uint)
+
+		if !ok {
+			log.Println("failed to assert userId as uint")
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get user id"})
+		}
+
+		tagId, err := strconv.Atoi(c.Params("tagId"))
+
+		if err != nil {
+			log.Println(err.Error())
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "failed to get tag id"})
+		}
+
+		belongsToUser, err := IsTagBelongsToUser(userId, uint(tagId))
+
+		if !belongsToUser {
+			if err != nil {
+				log.Println(err.Error())
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to delete tag"})
+			} else {
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "tag does not belongs to user"})
+			}
+		}
+
+		deleteErr := DeleteTagAndItsAssociations(uint(tagId))
+
+		if deleteErr != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to delete tag"})
+		}
+
+		return c.SendStatus(fiber.StatusOK)
 	})
 }

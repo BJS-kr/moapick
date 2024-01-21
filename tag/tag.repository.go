@@ -37,10 +37,26 @@ func IsTagBelongsToUser(userId, tagId uint) (bool, error) {
 	return true, nil
 }
 
-func AttachTagToArticle(attachBody *AttachBody) error {
-	articleEntity := models.Article{
-		ID: attachBody.ArticleId,
+func AttachTagToArticle(attachBody *ArticleIdAndTagId) error {
+	articleEntity := models.Article{ID: attachBody.ArticleId}
+	tagEntity := models.Tag{ID: attachBody.TagId}
+
+	return db.Client.Model(&articleEntity).Association("Tags").Append(&tagEntity)
+}
+
+func DetachTagFromArticle(detachBody *ArticleIdAndTagId) error {
+	articleEntity := models.Article{ID: detachBody.ArticleId}
+	tagEntity := models.Tag{ID: detachBody.TagId}
+
+	return db.Client.Model(&articleEntity).Association("Tags").Delete(&tagEntity)
+}
+
+func DeleteTagAndItsAssociations(tagId uint) error {
+	tagEntity := models.Tag{ID: tagId}
+
+	if err := db.Client.Model(&tagEntity).Association("Articles").Clear(); err != nil {
+		return err
 	}
 
-	return db.Client.Model(&articleEntity).Association("Tags").Append(&models.Tag{ID: attachBody.TagId})
+	return db.Client.Delete(&tagEntity, tagId).Error
 }

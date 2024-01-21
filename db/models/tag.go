@@ -8,6 +8,6 @@ type Tag struct {
 	Title     string     `gorm:"uniqueIndex:userid_title_uniq_idx" json:"title"`
 	UserID    uint       `gorm:"uniqueIndex:userid_title_uniq_idx" json:"user_id,omitempty"`
 	Articles  []*Article `gorm:"many2many:article_tags;" json:"articles,omitempty"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at,omitempty"`
 }

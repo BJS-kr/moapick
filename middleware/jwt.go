@@ -13,7 +13,7 @@ import (
 const BearerSchema = "Bearer "
 
 func JwtMiddleware() fiber.Handler {
-	return func(c *fiber.Ctx) error{
+	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		tokenString := strings.TrimPrefix(authHeader, BearerSchema)
 
@@ -28,7 +28,7 @@ func JwtMiddleware() fiber.Handler {
 
 		if err != nil {
 			log.Println(err.Error())
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unexpected access token algorithm"})	
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unexpected access token algorithm"})
 		}
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
@@ -38,13 +38,13 @@ func JwtMiddleware() fiber.Handler {
 			if !emailFound || !userIdFound {
 				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "expected claim missing"})
 			}
-			
+
 			floatUserId, ok := userId.(float64)
 
 			if !ok {
-				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error":"invalid user id"})
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid user id"})
 			}
-			
+
 			c.Locals("email", email)
 			c.Locals("userId", uint(floatUserId))
 		} else {

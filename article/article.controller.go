@@ -85,7 +85,7 @@ func ArticleController(r *fiber.App) {
 		articleId, err := strconv.Atoi(c.Params("articleId"))
 
 		if err != nil {
-			log.Panicln(err.Error())
+			log.Println(err.Error())
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "articleId must be integer"})
 		}
 

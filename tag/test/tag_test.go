@@ -111,7 +111,6 @@ func TestTagController(t *testing.T) {
 		article := models.Article{}
 		json.NewDecoder(getArticleResp.Body).Decode(&article)
 
-		fmt.Println(article.Tags)
 		assert.Equal(t, 1, len(article.Tags))
 		assert.Equal(t, article.Tags[0].ID, userTags[0].ID)
 	})
