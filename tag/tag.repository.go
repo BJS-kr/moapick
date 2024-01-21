@@ -27,7 +27,7 @@ func GetAllTagsOfUser(userId uint) ([]models.Tag, error) {
 }
 
 func IsTagBelongsToUser(userId, tagId uint) (bool, error) {
-	if result := db.Client.Where("ID = ? AND user_id = ?", tagId, userId).First(&models.Tag{}); result.Error != nil {
+	if result := db.Client.Select("id").Where("id = ? AND user_id = ?", tagId, userId).First(&models.Tag{}); result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return false, nil
 		}
