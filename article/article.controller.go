@@ -18,7 +18,7 @@ type UpdateArticleTitleBody struct {
 	Title string `json:"title"`
 }
 
-func ArticleController(r *fiber.App) {
+func ArticleRouter(r *fiber.App) {
 	a := r.Group("/article")
 	a.Use(middleware.JwtMiddleware())
 

@@ -2,32 +2,35 @@ package tag
 
 import (
 	"errors"
-	"moapick/db"
 	"moapick/db/models"
 
 	"gorm.io/gorm"
 )
 
-func CreateTag(title string, userId uint) error {
+type TagRepository struct {
+	Client *gorm.DB
+}
+
+func (tr TagRepository)CreateTag(title string, userId uint) error {
 	tagEntity := models.Tag{
 		Title:  title,
 		UserID: userId,
 	}
 
-	result := db.Client.Create(&tagEntity)
+	result := tr.Client.Create(&tagEntity)
 
 	return result.Error
 }
 
-func GetAllTagsOfUser(userId uint) ([]models.Tag, error) {
+func (tr TagRepository)GetAllTagsOfUser(userId uint) ([]models.Tag, error) {
 	var tags []models.Tag
-	result := db.Client.Where("user_id = ?", userId).Find(&tags)
+	result := tr.Client.Where("user_id = ?", userId).Find(&tags)
 
 	return tags, result.Error
 }
 
-func IsTagBelongsToUser(userId, tagId uint) (bool, error) {
-	if result := db.Client.Select("id").Where("id = ? AND user_id = ?", tagId, userId).First(&models.Tag{}); result.Error != nil {
+func (tr TagRepository)IsTagBelongsToUser(userId, tagId uint) (bool, error) {
+	if result := tr.Client.Select("id").Where("id = ? AND user_id = ?", tagId, userId).First(&models.Tag{}); result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return false, nil
 		}
@@ -37,34 +40,34 @@ func IsTagBelongsToUser(userId, tagId uint) (bool, error) {
 	return true, nil
 }
 
-func AttachTagToArticle(attachBody *ArticleIdAndTagId) error {
+func (tr TagRepository)AttachTagToArticle(attachBody *ArticleIdAndTagId) error {
 	articleEntity := models.Article{ID: attachBody.ArticleId}
 	tagEntity := models.Tag{ID: attachBody.TagId}
 
-	return db.Client.Model(&articleEntity).Association("Tags").Append(&tagEntity)
+	return tr.Client.Model(&articleEntity).Association("Tags").Append(&tagEntity)
 }
 
-func DetachTagFromArticle(detachBody *ArticleIdAndTagId) error {
+func (tr TagRepository)DetachTagFromArticle(detachBody *ArticleIdAndTagId) error {
 	articleEntity := models.Article{ID: detachBody.ArticleId}
 	tagEntity := models.Tag{ID: detachBody.TagId}
 
-	return db.Client.Model(&articleEntity).Association("Tags").Delete(&tagEntity)
+	return tr.Client.Model(&articleEntity).Association("Tags").Delete(&tagEntity)
 }
 
-func DeleteTagAndItsAssociations(tagId uint) error {
+func (tr TagRepository)DeleteTagAndItsAssociations(tagId uint) error {
 	tagEntity := models.Tag{ID: tagId}
 
-	if err := db.Client.Model(&tagEntity).Association("Articles").Clear(); err != nil {
+	if err := tr.Client.Model(&tagEntity).Association("Articles").Clear(); err != nil {
 		return err
 	}
 
-	return db.Client.Delete(&tagEntity, tagId).Error
+	return tr.Client.Delete(&tagEntity, tagId).Error
 }
 
-func GetArticlesByTagId(tagId uint) ([]*models.Article, error) {
+func (tr TagRepository)GetArticlesByTagId(tagId uint) ([]*models.Article, error) {
 	tagEntity := models.Tag{}
 
-	err := db.Client.Where("id = ?", tagId).Preload("Articles", func (db *gorm.DB)  *gorm.DB {
+	err := tr.Client.Where("id = ?", tagId).Preload("Articles", func (db *gorm.DB)  *gorm.DB {
 		return db.Select("id", "created_at", "updated_at", "user_id", "title", "article_link", "og_image_link")
 	}).First(&tagEntity).Error
 

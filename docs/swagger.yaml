@@ -1,4 +1,24 @@
 info:
   contact: {}
-paths: {}
+  description: moapick 서비스의 api문서입니다.
+  title: moapick
+  version: 0.1.0
+paths:
+  /accounts/{id}:
+    get:
+      consumes:
+      - application/json
+      description: get string by ID
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses: {}
+      summary: Show an account
+      tags:
+      - accounts
 swagger: "2.0"

@@ -1,7 +1,36 @@
 {
     "swagger": "2.0",
     "info": {
-        "contact": {}
+        "description": "moapick 서비스의 api문서입니다.",
+        "title": "moapick",
+        "contact": {},
+        "version": "0.1.0"
     },
-    "paths": {}
+    "paths": {
+        "/accounts/{id}": {
+            "get": {
+                "description": "get string by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "Show an account",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            }
+        }
+    }
 }

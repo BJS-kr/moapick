@@ -13,7 +13,7 @@ func SetRouters(r *fiber.App)  {
 		return c.SendString("Hello, World 👋!")
 	})
 	
-	user.UserController(r)
-	article.ArticleController(r)
-	tag.TagController(r)
+	user.UserRouter(r)
+	article.ArticleRouter(r)
+	tag.TagRouter(r)
 }
