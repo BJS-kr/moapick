@@ -58,7 +58,7 @@ func TestTagController(t *testing.T) {
 	json.NewDecoder(signInResp.Body).Decode(&accessTokenBody)
 
 	accessToken := accessTokenBody.AccessToken
-	tester := test_utils.MakeHTTPTester(accessToken)
+	tester := test_utils.Tester{AccessToken: accessToken} 
 
 	articleResp1 := tester.POST(ARTICLE, `{"link":"https://medium.com", "title":"개발 아티클이 많아요"}`)
 	articleResp2 := tester.POST(ARTICLE, `{"link":"https://google.com", "title":"검색하기 좋아요"}`)

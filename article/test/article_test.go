@@ -47,7 +47,7 @@ func TestArticleController(t *testing.T) {
 
 	json.NewDecoder(signInResp.Body).Decode(&accessTokenBody)
 	
-	tester := test_utils.MakeHTTPTester(accessTokenBody.AccessToken)
+	tester := test_utils.Tester{AccessToken: accessTokenBody.AccessToken}
 	t.Run("save article", func(t *testing.T) {
 		saveResp := tester.POST(DEFAULT_PATH, `{"link":"https://stackoverflow.com", "title":"개발 핵꿀팁 저장소"}`)
 
