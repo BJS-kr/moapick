@@ -63,8 +63,8 @@ func (uc UserController)SignIn(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusCreated).JSON(responseBody)
 	}
 
-	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-		"error": "error during sign-in process",
+	return c.Status(fiber.StatusInternalServerError).JSON(common.ErrorMessage{
+		Error: "error during sign-in process",
 	})
 }
 // ShowAccount godoc
