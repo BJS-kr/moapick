@@ -23,4 +23,5 @@ export PATH=$(go env GOPATH)/bin:$PATH
 -d 옵션을 사용해 directory를 ,를 기준으로 모두 명시해주어야합니다. 다만, main.go이 있는 루트도 포함해야합니다.
 
 또 한, 타입 정의에 dependency가 포함되어있을 경우 --parseDependency를, internal을 포함한다면 --parseInternal옵션을 붙여야합니다. 이 옵션들은 동시에 사용될 수도 있습니다.
+
 ex) swag init -d ./,./user,./article --parseDependency --parseInternal
