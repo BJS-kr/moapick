@@ -18,6 +18,6 @@ func UserRouter(r *fiber.App) {
 	au := u.Group("/")
 	au.Use(middleware.JwtMiddleware())
 
-	au.Get("/:userId", userController.GetUserById)
+	au.Get("/", userController.GetUserById)
 }
 

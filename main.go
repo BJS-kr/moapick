@@ -16,9 +16,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// @version 0.1.0
-// @title moapick
-// @description moapick 서비스의 api문서입니다.
+//	@version		0.1.0
+//	@title			moapick
+//	@description	moapick 서비스의 api문서입니다.
+//	@basePath		/
 func main() {
 	envError := godotenv.Load("test.env")
 

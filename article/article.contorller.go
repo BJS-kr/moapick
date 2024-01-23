@@ -12,7 +12,17 @@ type ArticleController struct {
 	ArticleRepository
 	ArticleService
 }
-
+// ShowAccount godoc
+//	@Summary		save article
+//	@Description	user에 속한 article을 저장합니다. OG image를 탐색하고 없을 시 빈 값이 저장됩니다.
+//	@Tags			article
+//	@Accept			json
+//	@Param			Authorization	header	string			true	"Insert your access token"	default(Bearer <Add access token here>)
+//	@Param			request			body	SaveArticleBody	true	"information to save article"
+//	@Success		201				
+//	@Failure		400				{object}	common.ErrorMessage
+//	@Failure		500				{object}	common.ErrorMessage
+//	@Router			/article [post]
 func (ac ArticleController)SaveArticle(c *fiber.Ctx) error {
 		userId, ok := c.Locals("userId").(uint)
 
@@ -54,7 +64,15 @@ func (ac ArticleController)SaveArticle(c *fiber.Ctx) error {
 
 		return c.SendStatus(fiber.StatusCreated)
 	}
-
+// ShowAccount godoc
+//	@Summary		get all articles
+//	@Description	user에 속한 모든 articles를 반환합니다.
+//	@Tags			article
+//	@Param			Authorization	header		string	true	"Insert your access token"	default(Bearer <Add access token here>)
+//	@Success		200				{array}		models.Article
+//	@Failure		400				{object}	common.ErrorMessage
+//	@Failure		500				{object}	common.ErrorMessage
+//	@Router			/article/all [get]
 func (ac ArticleController)GetAllArticlesOfUser(c *fiber.Ctx) error {
 		userId, ok := c.Locals("userId").(uint)
 		if !ok {
@@ -71,7 +89,16 @@ func (ac ArticleController)GetAllArticlesOfUser(c *fiber.Ctx) error {
 
 		return c.JSON(articles)
 	}
-
+// ShowAccount godoc
+//	@Summary		get article by article id
+//	@Description	article id에 해당하는 article을 반환합니다.
+//	@Tags			article
+//	@Param			Authorization	header		string	true	"Insert your access token"	default(Bearer <Add access token here>)
+//	@Param			articleId		path		integer	true	"article id"
+//	@Success		200				{object}	models.Article
+//	@Failure		400				{object}	common.ErrorMessage
+//	@Failure		500				{object}	common.ErrorMessage
+//	@Router			/article/:articleId [get]
 func(ac ArticleController)GetArticleById(c *fiber.Ctx) error {
 		articleId, err := strconv.Atoi(c.Params("articleId"))
 
@@ -89,7 +116,15 @@ func(ac ArticleController)GetArticleById(c *fiber.Ctx) error {
 
 		return c.JSON(article)
 	}
-
+// ShowAccount godoc
+//	@Summary		delete all article
+//	@Description	user에 속한 모든 articles를 지웁니다.
+//	@Tags			article
+//	@Param			Authorization	header	string	true	"Insert your access token"	default(Bearer <Add access token here>)
+//	@Success		200
+//	@Failure		400	{object}	common.ErrorMessage
+//	@Failure		500	{object}	common.ErrorMessage
+//	@Router			/article/all [delete]
 func(ac ArticleController)DeleteArticlesByUserId(c *fiber.Ctx) error {
 		userId, ok := c.Locals("userId").(uint)
 
@@ -107,7 +142,16 @@ func(ac ArticleController)DeleteArticlesByUserId(c *fiber.Ctx) error {
 
 		return c.SendStatus(fiber.StatusOK)
 	}
-
+// ShowAccount godoc
+//	@Summary		delete article by id
+//	@Description	user에 속한 article을 지웁니다.
+//	@Tags			article
+//	@Param			articleId		path	integer	true	"article id"
+//	@Param			Authorization	header	string	true	"Insert your access token"	default(Bearer <Add access token here>)
+//	@Success		200
+//	@Failure		400	{object}	common.ErrorMessage
+//	@Failure		500	{object}	common.ErrorMessage
+//	@Router			/article/:articleId [delete]
 func(ac ArticleController)DeleteArticleById(c *fiber.Ctx) error {
 		articleId, err := strconv.Atoi(c.Params("articleId"))
 
@@ -125,7 +169,17 @@ func(ac ArticleController)DeleteArticleById(c *fiber.Ctx) error {
 
 		return c.SendStatus(fiber.StatusOK)
 	}
-
+// ShowAccount godoc
+//	@Summary		update article title
+//	@Description	article의 title을 업데이트합니다.
+//	@Tags			article
+//	@Accept			json
+//	@Param			Authorization	header	string					true	"Insert your access token"	default(Bearer <Add access token here>)
+//	@Param			request			body	UpdateArticleTitleBody	true	"title to update"
+//	@Success		200				
+//	@Failure		400				{object}	common.ErrorMessage
+//	@Failure		500				{object}	common.ErrorMessage
+//	@Router			/article/title/:articleId [patch]
 func(ac ArticleController)UpdateArticleTitleById(c *fiber.Ctx) error {
 		articleId, err := strconv.Atoi(c.Params("articleId"))
 

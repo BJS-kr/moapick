@@ -1,24 +1,540 @@
+basePath: /
+definitions:
+  article.SaveArticleBody:
+    properties:
+      link:
+        type: string
+      title:
+        type: string
+    type: object
+  article.UpdateArticleTitleBody:
+    properties:
+      title:
+        type: string
+    type: object
+  common.ErrorMessage:
+    properties:
+      error:
+        type: string
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  models.Article:
+    properties:
+      article_link:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      og_image_link:
+        type: string
+      tags:
+        items:
+          $ref: '#/definitions/models.Tag'
+        type: array
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.Tag:
+    properties:
+      articles:
+        items:
+          $ref: '#/definitions/models.Article'
+        type: array
+      created_at:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.User:
+    properties:
+      articles:
+        items:
+          $ref: '#/definitions/models.Article'
+        type: array
+      created_at:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        type: string
+      id:
+        type: integer
+      tags:
+        items:
+          $ref: '#/definitions/models.Tag'
+        type: array
+      updated_at:
+        type: string
+    type: object
+  tag.ArticleIdAndTagId:
+    properties:
+      article_id:
+        type: integer
+      tag_id:
+        type: integer
+    type: object
+  tag.TagBody:
+    properties:
+      title:
+        type: string
+    type: object
+  user.JwtAccessToken:
+    properties:
+      access_token:
+        type: string
+    type: object
+  user.SignInBody:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
 info:
   contact: {}
   description: moapick 서비스의 api문서입니다.
   title: moapick
   version: 0.1.0
 paths:
-  /accounts/{id}:
-    get:
+  /article:
+    post:
       consumes:
       - application/json
-      description: get string by ID
+      description: user에 속한 article을 저장합니다. OG image를 탐색하고 없을 시 빈 값이 저장됩니다.
       parameters:
-      - description: Account ID
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: information to save article
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/article.SaveArticleBody'
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+      summary: save article
+      tags:
+      - article
+  /article/:articleId:
+    delete:
+      description: user에 속한 article을 지웁니다.
+      parameters:
+      - description: article id
         in: path
-        name: id
+        name: articleId
         required: true
         type: integer
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+      summary: delete article by id
+      tags:
+      - article
+    get:
+      description: article id에 해당하는 article을 반환합니다.
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: article id
+        in: path
+        name: articleId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Article'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+      summary: get article by article id
+      tags:
+      - article
+  /article/all:
+    delete:
+      description: user에 속한 모든 articles를 지웁니다.
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+      summary: delete all article
+      tags:
+      - article
+    get:
+      description: user에 속한 모든 articles를 반환합니다.
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Article'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+      summary: get all articles
+      tags:
+      - article
+  /article/title/:articleId:
+    patch:
+      consumes:
+      - application/json
+      description: article의 title을 업데이트합니다.
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: title to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/article.UpdateArticleTitleBody'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+      summary: update article title
+      tags:
+      - article
+  /tag:
+    post:
+      consumes:
+      - application/json
+      description: user의 custom tag를 생성합니다.
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: information to create tag
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/tag.TagBody'
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+      summary: create tag
+      tags:
+      - tag
+  /tag/:tagId:
+    delete:
+      description: user의 custom tag를 삭합니다.
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: tag id to be deleted
+        in: path
+        name: tagId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+      summary: delete tag
+      tags:
+      - tag
+  /tag/all:
+    get:
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Tag'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+      summary: user의 모든 tag를 반환합니다.
+      tags:
+      - tag
+  /tag/articles/:tagId:
+    get:
+      description: tag id에 해당하는 모든 articles를 반환합니다.
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: tag id to get articles
+        in: path
+        name: tagId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Article'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+      summary: 특정 tag에 해당하는 articles를 반환합니다.
+      tags:
+      - tag
+  /tag/attach:
+    patch:
+      consumes:
+      - application/json
+      description: user의 custom tag를 article에 붙입니다.
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: information to attach tag
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/tag.ArticleIdAndTagId'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+      summary: attach tag
+      tags:
+      - tag
+  /tag/detach:
+    patch:
+      consumes:
+      - application/json
+      description: article로부터 tag를 떼어냅니다.
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: information to detach tag
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/tag.ArticleIdAndTagId'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+      summary: detach tag
+      tags:
+      - tag
+  /user:
+    post:
+      consumes:
+      - application/json
+      description: 미리 가입되어있어야 하거나 비밀번호 같은 것 필요없습니다. 그냥 이메일만 보내면 그에 맞는 토큰을 생성해 돌려줍니다.
+      parameters:
+      - description: email to login
+        format: email
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.SignInBody'
       produces:
       - application/json
-      responses: {}
-      summary: Show an account
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/user.JwtAccessToken'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+      summary: sign in
       tags:
-      - accounts
+      - user
+  /user/:
+    get:
+      description: user id를 통해 유저 정보를 반환합니다.
+      parameters:
+      - default: Bearer <Add access token here>
+        description: Insert your access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: userId to get user info
+        in: path
+        name: userId
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.ErrorMessage'
+      summary: get user
+      tags:
+      - user
 swagger: "2.0"
