@@ -20,7 +20,8 @@ type JwtAccessToken struct {
 }
 
 type UserController struct {
-	UserRepository UserRepository
+	UserRepository
+	UserService
 }
 
 func (uc UserController)SignIn(c *fiber.Ctx) error {
@@ -46,7 +47,7 @@ func (uc UserController)SignIn(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 
-	if jwt, err := IssueJwt(singInBody.Email, user.ID); err == nil {
+	if jwt, err := uc.UserService.IssueJwt(singInBody.Email, user.ID); err == nil {
 		responseBody := JwtAccessToken{AccessToken: jwt}
 		return c.JSON(responseBody)
 	}

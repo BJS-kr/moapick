@@ -7,7 +7,9 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func IssueJwt(userEmail string, userId uint) (string, error) {
+type UserService struct {}
+
+func (us UserService)IssueJwt(userEmail string, userId uint) (string, error) {
 	var (
 		key   []byte
 		token *jwt.Token

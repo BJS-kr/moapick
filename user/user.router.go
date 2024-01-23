@@ -9,7 +9,8 @@ import (
 
 func UserRouter(r *fiber.App) {
 	userRepository := UserRepository{Client: db.Client}
-	userController := UserController{UserRepository: userRepository}
+	userService := UserService{}
+	userController := UserController{UserRepository: userRepository, UserService: userService}
 
 	u := r.Group("/user")
 	u.Post("/sign-in", userController.SignIn)

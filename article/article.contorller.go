@@ -2,27 +2,18 @@ package article
 
 import (
 	"log"
-	"moapick/middleware"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/otiai10/opengraph"
 )
 
-type SaveArticleBody struct {
-	Link  string `json:"link"`
-	Title string `json:"title"`
+type ArticleController struct {
+	ArticleRepository ArticleRepository
+	ArticleService ArticleService
 }
 
-type UpdateArticleTitleBody struct {
-	Title string `json:"title"`
-}
-
-func ArticleRouter(r *fiber.App) {
-	a := r.Group("/article")
-	a.Use(middleware.JwtMiddleware())
-
-	a.Post("/", func(c *fiber.Ctx) error {
+func (ac ArticleController)SaveArticle(c *fiber.Ctx) error {
 		userId, ok := c.Locals("userId").(uint)
 
 		if !ok {
@@ -37,7 +28,7 @@ func ArticleRouter(r *fiber.App) {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "unexpected request body"})
 		}
 
-		isValidUrl := IsValidURL(articleBody.Link)
+		isValidUrl := ac.ArticleService.IsValidURL(articleBody.Link)
 
 		if !isValidUrl {
 			log.Println("invalid url")
@@ -54,7 +45,7 @@ func ArticleRouter(r *fiber.App) {
 			}
 		}
 
-		saveErr := SaveArticle(userId, articleBody, ogImageLink)
+		saveErr := ac.ArticleRepository.SaveArticle(userId, articleBody, ogImageLink)
 
 		if saveErr != nil {
 			log.Println(err.Error())
@@ -62,16 +53,16 @@ func ArticleRouter(r *fiber.App) {
 		}
 
 		return c.SendStatus(fiber.StatusCreated)
-	})
+	}
 
-	a.Get("/all", func(c *fiber.Ctx) error {
+func (ac ArticleController)GetAllArticlesOfUser(c *fiber.Ctx) error {
 		userId, ok := c.Locals("userId").(uint)
 		if !ok {
 			log.Println("failed to assert email as string")
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get email"})
 		}
 
-		articles, err := FindArticlesByUserId(userId)
+		articles, err := ac.ArticleRepository.FindArticlesByUserId(userId)
 
 		if err != nil {
 			log.Println(err.Error())
@@ -79,9 +70,9 @@ func ArticleRouter(r *fiber.App) {
 		}
 
 		return c.JSON(articles)
-	})
+	}
 
-	a.Get("/:articleId", func(c *fiber.Ctx) error {
+func(ac ArticleController)GetArticleById(c *fiber.Ctx) error {
 		articleId, err := strconv.Atoi(c.Params("articleId"))
 
 		if err != nil {
@@ -89,7 +80,7 @@ func ArticleRouter(r *fiber.App) {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "articleId must be integer"})
 		}
 
-		article, err := FindArticleById(uint(articleId))
+		article, err := ac.ArticleRepository.FindArticleById(uint(articleId))
 
 		if err != nil {
 			log.Println(err.Error())
@@ -97,9 +88,9 @@ func ArticleRouter(r *fiber.App) {
 		}
 
 		return c.JSON(article)
-	})
+	}
 
-	a.Delete("/all", func(c *fiber.Ctx) error {
+func(ac ArticleController)DeleteArticlesByUserId(c *fiber.Ctx) error {
 		userId, ok := c.Locals("userId").(uint)
 
 		if !ok {
@@ -107,7 +98,7 @@ func ArticleRouter(r *fiber.App) {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get userId"})
 		}
 
-		err := DeleteArticlesByUserId(userId)
+		err := ac.ArticleRepository.DeleteArticlesByUserId(userId)
 
 		if err != nil {
 			log.Println(err.Error())
@@ -115,16 +106,16 @@ func ArticleRouter(r *fiber.App) {
 		}
 
 		return c.SendStatus(fiber.StatusOK)
-	})
+	}
 
-	a.Delete("/:articleId", func(c *fiber.Ctx) error {
+func(ac ArticleController)DeleteArticleById(c *fiber.Ctx) error {
 		articleId, err := strconv.Atoi(c.Params("articleId"))
 
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "articleId must be integer"})
 		}
 
-		err = DeleteArticleById(uint(articleId))
+		err = ac.ArticleRepository.DeleteArticleById(uint(articleId))
 
 		if err != nil {
 			log.Println(err.Error())
@@ -133,9 +124,9 @@ func ArticleRouter(r *fiber.App) {
 		}
 
 		return c.SendStatus(fiber.StatusOK)
-	})
+	}
 
-	a.Patch("/title/:articleId", func(c *fiber.Ctx) error {
+func(ac ArticleController)UpdateArticleTitleById(c *fiber.Ctx) error {
 		articleId, err := strconv.Atoi(c.Params("articleId"))
 
 		if err != nil {
@@ -149,7 +140,7 @@ func ArticleRouter(r *fiber.App) {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "unexpected request body"})
 		}
 
-		updateErr := UpdateArticleTitleById(uint(articleId), updateArticleTitleBody.Title)
+		updateErr := ac.ArticleRepository.UpdateArticleTitleById(uint(articleId), updateArticleTitleBody.Title)
 
 		if updateErr != nil {
 			log.Println(err.Error())
@@ -157,5 +148,4 @@ func ArticleRouter(r *fiber.App) {
 		}
 
 		return c.SendStatus(fiber.StatusOK)
-	})
-}
+	}
