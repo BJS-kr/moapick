@@ -17,7 +17,7 @@ type ArticleIdAndTagId struct {
 }
 
 type TagController struct {
-	TagRepository TagRepository
+	TagRepository
 }
 
 func (tc TagController)CreateTag(c *fiber.Ctx) error {

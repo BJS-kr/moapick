@@ -9,8 +9,8 @@ import (
 )
 
 type ArticleController struct {
-	ArticleRepository ArticleRepository
-	ArticleService ArticleService
+	ArticleRepository
+	ArticleService
 }
 
 func (ac ArticleController)SaveArticle(c *fiber.Ctx) error {
