@@ -6,11 +6,12 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
+
 type ArticleRepository struct {
 	Client *gorm.DB
 }
 
-func (ar ArticleRepository)SaveArticle(userId uint, saveArticleBody *SaveArticleBody, ogImageLink string) error {
+func (ar ArticleRepository) SaveArticle(userId uint, saveArticleBody *SaveArticleBody, ogImageLink string) error {
 	articleEntity := models.Article{
 		UserId:      userId,
 		Title:       saveArticleBody.Title,
@@ -27,7 +28,7 @@ func (ar ArticleRepository)SaveArticle(userId uint, saveArticleBody *SaveArticle
 	return result.Error
 }
 
-func (ar ArticleRepository)FindArticlesByUserId(userId uint) ([]models.Article, error) {
+func (ar ArticleRepository) FindArticlesByUserId(userId uint) ([]models.Article, error) {
 	var articles []models.Article
 	result := ar.Client.Where("user_id = ?", userId).Preload("Tags", func(db *gorm.DB) *gorm.DB {
 		// select한다고 해서 return 값에서 select된 필드만 들어가는 것은 아니다.
@@ -38,28 +39,28 @@ func (ar ArticleRepository)FindArticlesByUserId(userId uint) ([]models.Article, 
 	return articles, result.Error
 }
 
-func (ar ArticleRepository)FindArticleById(articleId uint) (models.Article, error) {
+func (ar ArticleRepository) FindArticleById(articleId uint) (models.Article, error) {
 	var article models.Article
-	result := ar.Client.Where("id = ?", articleId).Preload("Tags", func (db *gorm.DB)  *gorm.DB{
+	result := ar.Client.Where("id = ?", articleId).Preload("Tags", func(db *gorm.DB) *gorm.DB {
 		return db.Select("id", "title", "created_at")
 	}).First(&article)
 
 	return article, result.Error
 }
 
-func (ar ArticleRepository)DeleteArticleById(articleId uint) error {
+func (ar ArticleRepository) DeleteArticleById(articleId uint) error {
 	result := ar.Client.Where("id = ?", articleId).Delete(&models.Article{})
 
 	return result.Error
 }
 
-func (ar ArticleRepository)DeleteArticlesByUserId(userId uint) error {
+func (ar ArticleRepository) DeleteArticlesByUserId(userId uint) error {
 	result := ar.Client.Where("user_id = ?", userId).Delete(&models.Article{})
 
 	return result.Error
 }
 
-func (ar ArticleRepository)UpdateArticleTitleById(articleId uint, title string) error {
+func (ar ArticleRepository) UpdateArticleTitleById(articleId uint, title string) error {
 	result := ar.Client.Model(&models.Article{}).Where("id = ?", articleId).Update("title", title)
 
 	return result.Error

@@ -20,7 +20,7 @@ func ArticleRouter(r *fiber.App) {
 	articleRepository := ArticleRepository{Client: db.Client}
 	articleService := ArticleService{}
 	articleController := ArticleController{ArticleRepository: articleRepository, ArticleService: articleService}
-	
+
 	a := r.Group("/article")
 	a.Use(middleware.JwtMiddleware())
 

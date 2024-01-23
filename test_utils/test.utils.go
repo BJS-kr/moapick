@@ -12,7 +12,7 @@ type Tester struct {
 	AccessToken string
 }
 
-func (t Tester)GET(path string) *http.Response {
+func (t Tester) GET(path string) *http.Response {
 	req, err := http.NewRequest("GET", path, nil)
 
 	setHeaders(req, t.AccessToken)
@@ -30,7 +30,7 @@ func (t Tester)GET(path string) *http.Response {
 	return res
 }
 
-func (t Tester)POST(path string, body string) *http.Response {
+func (t Tester) POST(path string, body string) *http.Response {
 	req, err := http.NewRequest("POST", path, makeRawBody(body))
 
 	setHeaders(req, t.AccessToken)
@@ -48,7 +48,7 @@ func (t Tester)POST(path string, body string) *http.Response {
 	return res
 }
 
-func(t Tester)PUT(path string, body string) *http.Response {
+func (t Tester) PUT(path string, body string) *http.Response {
 	req, err := http.NewRequest("PUT", path, makeRawBody(body))
 
 	setHeaders(req, t.AccessToken)
@@ -66,7 +66,7 @@ func(t Tester)PUT(path string, body string) *http.Response {
 	return res
 }
 
-func(t Tester)PATCH(path string, rawBody string) *http.Response {
+func (t Tester) PATCH(path string, rawBody string) *http.Response {
 	req, err := http.NewRequest("PATCH", path, makeRawBody(rawBody))
 
 	setHeaders(req, t.AccessToken)
@@ -84,7 +84,7 @@ func(t Tester)PATCH(path string, rawBody string) *http.Response {
 	return res
 }
 
-func(t Tester)DELETE(path string) *http.Response {
+func (t Tester) DELETE(path string) *http.Response {
 	req, err := http.NewRequest("DELETE", path, nil)
 
 	setHeaders(req, t.AccessToken)
@@ -101,7 +101,6 @@ func(t Tester)DELETE(path string) *http.Response {
 
 	return res
 }
-
 
 func makeRawBody(rawBody string) *bytes.Buffer {
 	return bytes.NewBuffer([]byte(rawBody))

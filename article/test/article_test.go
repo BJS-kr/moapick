@@ -18,6 +18,7 @@ import (
 
 const DEFAULT_PATH string = "http://localhost:8080/article"
 const USER_EMAIL string = "article_test@test.com"
+
 func TestArticleController(t *testing.T) {
 	var targetArticleId uint
 
@@ -25,10 +26,10 @@ func TestArticleController(t *testing.T) {
 
 	db := test_utils.GetRawDB()
 
-	t.Cleanup(func ()  {
+	t.Cleanup(func() {
 		_, err := db.Exec("DELETE FROM articles;")
-	
-		if err!=nil {
+
+		if err != nil {
 			panic(err)
 		}
 
@@ -46,7 +47,7 @@ func TestArticleController(t *testing.T) {
 	accessTokenBody := user.JwtAccessToken{}
 
 	json.NewDecoder(signInResp.Body).Decode(&accessTokenBody)
-	
+
 	tester := test_utils.Tester{AccessToken: accessTokenBody.AccessToken}
 	t.Run("save article", func(t *testing.T) {
 		saveResp := tester.POST(DEFAULT_PATH, `{"link":"https://stackoverflow.com", "title":"개발 핵꿀팁 저장소"}`)

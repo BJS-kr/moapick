@@ -25,6 +25,7 @@ type UserController struct {
 }
 
 // ShowAccount godoc
+//
 //	@Summary		sign in
 //	@Description	미리 가입되어있어야 하거나 비밀번호 같은 것 필요없습니다. 그냥 이메일만 보내면 그에 맞는 토큰을 생성해 돌려줍니다.
 //	@Tags			user
@@ -35,7 +36,7 @@ type UserController struct {
 //	@Failure		400		{object}	common.ErrorMessage
 //	@Failure		500		{object}	common.ErrorMessage
 //	@Router			/user/sign-in [post]
-func (uc UserController)SignIn(c *fiber.Ctx) error {
+func (uc UserController) SignIn(c *fiber.Ctx) error {
 	singInBody := new(SignInBody)
 
 	if err := c.BodyParser(singInBody); err != nil {
@@ -67,7 +68,9 @@ func (uc UserController)SignIn(c *fiber.Ctx) error {
 		Error: "error during sign-in process",
 	})
 }
+
 // ShowAccount godoc
+//
 //	@Summary		get user
 //	@Description	user id를 통해 유저 정보를 반환합니다.
 //	@Tags			user
@@ -76,9 +79,9 @@ func (uc UserController)SignIn(c *fiber.Ctx) error {
 //	@Failure		400				{object}	common.ErrorMessage
 //	@Failure		500				{object}	common.ErrorMessage
 //	@Router			/user [get]
-func (uc UserController)GetUserById(c *fiber.Ctx) error {
+func (uc UserController) GetUserById(c *fiber.Ctx) error {
 	userId, ok := c.Locals("userId").(uint)
-	
+
 	if !ok {
 		return c.JSON(fiber.StatusBadRequest, "failed to get user id")
 	}
@@ -96,4 +99,3 @@ func (uc UserController)GetUserById(c *fiber.Ctx) error {
 
 	return c.JSON(user)
 }
-

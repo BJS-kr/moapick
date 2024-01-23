@@ -20,4 +20,3 @@ func UserRouter(r *fiber.App) {
 
 	au.Get("/", userController.GetUserById)
 }
-

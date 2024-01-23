@@ -58,7 +58,7 @@ func TestTagController(t *testing.T) {
 	json.NewDecoder(signInResp.Body).Decode(&accessTokenBody)
 
 	accessToken := accessTokenBody.AccessToken
-	tester := test_utils.Tester{AccessToken: accessToken} 
+	tester := test_utils.Tester{AccessToken: accessToken}
 
 	articleResp1 := tester.POST(ARTICLE, `{"link":"https://medium.com", "title":"개발 아티클이 많아요"}`)
 	articleResp2 := tester.POST(ARTICLE, `{"link":"https://google.com", "title":"검색하기 좋아요"}`)
@@ -133,7 +133,7 @@ func TestTagController(t *testing.T) {
 		json.NewDecoder(getArticleResp.Body).Decode(&article)
 		json.NewDecoder(getAllTagsResp.Body).Decode(&tags)
 
-		// 총 두 개의 user custom tag 중, 아티클에 붙어있던 tag를 삭제했으니 
+		// 총 두 개의 user custom tag 중, 아티클에 붙어있던 tag를 삭제했으니
 		// article에는 태그가 없어지고
 		// tag의 총 갯수는 하나가 된다.
 		assert.Equal(t, 0, len(article.Tags))

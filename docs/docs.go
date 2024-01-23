@@ -566,13 +566,6 @@ const docTemplate = `{
                         "name": "Authorization",
                         "in": "header",
                         "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "userId to get user info",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
                     }
                 ],
                 "responses": {

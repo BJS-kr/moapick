@@ -7,9 +7,9 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type UserService struct {}
+type UserService struct{}
 
-func (us UserService)IssueJwt(userEmail string, userId uint) (string, error) {
+func (us UserService) IssueJwt(userEmail string, userId uint) (string, error) {
 	var (
 		key   []byte
 		token *jwt.Token
@@ -18,10 +18,10 @@ func (us UserService)IssueJwt(userEmail string, userId uint) (string, error) {
 	key = []byte(os.Getenv("SECRET_KEY"))
 	token = jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
-			"iss":   "moapick",
-			"email": userEmail,
+			"iss":     "moapick",
+			"email":   userEmail,
 			"user_id": userId,
-			"exp":   time.Now().Add(time.Hour * 24).Unix(),
+			"exp":     time.Now().Add(time.Hour * 24).Unix(),
 		})
 
 	return token.SignedString(key)
