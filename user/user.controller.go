@@ -72,7 +72,6 @@ func (uc UserController)SignIn(c *fiber.Ctx) error {
 //	@Description	user id를 통해 유저 정보를 반환합니다.
 //	@Tags			user
 //	@Param			Authorization	header		string	true	"Insert your access token"	default(Bearer <Add access token here>)
-//	@Param			userId			path		integer	true	"userId to get user info"
 //	@Success		200				{object}	models.User
 //	@Failure		400				{object}	common.ErrorMessage
 //	@Failure		500				{object}	common.ErrorMessage
