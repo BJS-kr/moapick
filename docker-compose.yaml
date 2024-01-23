@@ -1,0 +1,18 @@
+version: "3.7"
+services:
+  server:
+    image: moapick:latest
+    ports:
+      - "80:8080"
+    depends_on:
+      - pg
+  pg:
+    image: postgres:latest
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: moapick
+volumes:
+  dbdata:

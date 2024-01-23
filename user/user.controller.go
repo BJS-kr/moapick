@@ -34,7 +34,7 @@ type UserController struct {
 //	@Success		201		{object}	JwtAccessToken
 //	@Failure		400		{object}	common.ErrorMessage
 //	@Failure		500		{object}	common.ErrorMessage
-//	@Router			/user [post]
+//	@Router			/user/sign-in [post]
 func (uc UserController)SignIn(c *fiber.Ctx) error {
 	singInBody := new(SignInBody)
 
@@ -76,7 +76,7 @@ func (uc UserController)SignIn(c *fiber.Ctx) error {
 //	@Success		200				{object}	models.User
 //	@Failure		400				{object}	common.ErrorMessage
 //	@Failure		500				{object}	common.ErrorMessage
-//	@Router			/user/ [get]
+//	@Router			/user [get]
 func (uc UserController)GetUserById(c *fiber.Ctx) error {
 	userId, ok := c.Locals("userId").(uint)
 	

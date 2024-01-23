@@ -552,6 +552,52 @@ const docTemplate = `{
             }
         },
         "/user": {
+            "get": {
+                "description": "user id를 통해 유저 정보를 반환합니다.",
+                "tags": [
+                    "user"
+                ],
+                "summary": "get user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "userId to get user info",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrorMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/sign-in": {
             "post": {
                 "description": "미리 가입되어있어야 하거나 비밀번호 같은 것 필요없습니다. 그냥 이메일만 보내면 그에 맞는 토큰을 생성해 돌려줍니다.",
                 "consumes": [
@@ -581,52 +627,6 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/user.JwtAccessToken"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/common.ErrorMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/common.ErrorMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/": {
-            "get": {
-                "description": "user id를 통해 유저 정보를 반환합니다.",
-                "tags": [
-                    "user"
-                ],
-                "summary": "get user",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer \u003cAdd access token here\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "userId to get user info",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.User"
                         }
                     },
                     "400": {
