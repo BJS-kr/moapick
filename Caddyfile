@@ -1,0 +1,5 @@
+{$SITE_ADDRESS}
+
+:443, :80 {
+	reverse_proxy * server:8080
+}
