@@ -63,7 +63,131 @@ const docTemplate = `{
                 }
             }
         },
-        "/article/:articleId": {
+        "/article/all": {
+            "get": {
+                "description": "user에 속한 모든 articles를 반환합니다.",
+                "tags": [
+                    "article"
+                ],
+                "summary": "get all articles",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Article"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrorMessage"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "user에 속한 모든 articles를 지웁니다.",
+                "tags": [
+                    "article"
+                ],
+                "summary": "delete all article",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrorMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/article/title/{articleId}": {
+            "patch": {
+                "description": "article의 title을 업데이트합니다.",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "article"
+                ],
+                "summary": "update article title",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "title to update",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/article.UpdateArticleTitleBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrorMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/article/{articleId}": {
             "get": {
                 "description": "article id에 해당하는 article을 반환합니다.",
                 "tags": [
@@ -150,130 +274,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/article/all": {
-            "get": {
-                "description": "user에 속한 모든 articles를 반환합니다.",
-                "tags": [
-                    "article"
-                ],
-                "summary": "get all articles",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer \u003cAdd access token here\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Article"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/common.ErrorMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/common.ErrorMessage"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "user에 속한 모든 articles를 지웁니다.",
-                "tags": [
-                    "article"
-                ],
-                "summary": "delete all article",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer \u003cAdd access token here\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/common.ErrorMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/common.ErrorMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/article/title/:articleId": {
-            "patch": {
-                "description": "article의 title을 업데이트합니다.",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "article"
-                ],
-                "summary": "update article title",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer \u003cAdd access token here\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "title to update",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/article.UpdateArticleTitleBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/common.ErrorMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/common.ErrorMessage"
-                        }
-                    }
-                }
-            }
-        },
         "/tag": {
             "post": {
                 "description": "user의 custom tag를 생성합니다.",
@@ -306,49 +306,6 @@ const docTemplate = `{
                 "responses": {
                     "201": {
                         "description": "Created"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/common.ErrorMessage"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/common.ErrorMessage"
-                        }
-                    }
-                }
-            }
-        },
-        "/tag/:tagId": {
-            "delete": {
-                "description": "user의 custom tag를 삭합니다.",
-                "tags": [
-                    "tag"
-                ],
-                "summary": "delete tag",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer \u003cAdd access token here\u003e",
-                        "description": "Insert your access token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "tag id to be deleted",
-                        "name": "tagId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -406,7 +363,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/tag/articles/:tagId": {
+        "/tag/articles{tagId}": {
             "get": {
                 "description": "tag id에 해당하는 모든 articles를 반환합니다.",
                 "tags": [
@@ -530,6 +487,49 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/tag.ArticleIdAndTagId"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrorMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/common.ErrorMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/tag/{tagId}": {
+            "delete": {
+                "description": "user의 custom tag를 삭합니다.",
+                "tags": [
+                    "tag"
+                ],
+                "summary": "delete tag",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer \u003cAdd access token here\u003e",
+                        "description": "Insert your access token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "tag id to be deleted",
+                        "name": "tagId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {

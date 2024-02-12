@@ -148,7 +148,7 @@ paths:
       summary: save article
       tags:
       - article
-  /article/:articleId:
+  /article/{articleId}:
     delete:
       description: user에 속한 article을 지웁니다.
       parameters:
@@ -258,7 +258,7 @@ paths:
       summary: get all articles
       tags:
       - article
-  /article/title/:articleId:
+  /article/title/{articleId}:
     patch:
       consumes:
       - application/json
@@ -322,7 +322,7 @@ paths:
       summary: create tag
       tags:
       - tag
-  /tag/:tagId:
+  /tag/{tagId}:
     delete:
       description: user의 custom tag를 삭합니다.
       parameters:
@@ -378,7 +378,7 @@ paths:
       summary: user의 모든 tag를 반환합니다.
       tags:
       - tag
-  /tag/articles/:tagId:
+  /tag/articles{tagId}:
     get:
       description: tag id에 해당하는 모든 articles를 반환합니다.
       parameters:

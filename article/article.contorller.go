@@ -1,6 +1,7 @@
 package article
 
 import (
+	"fmt"
 	"log"
 	"moapick/common"
 	"strconv"
@@ -50,9 +51,14 @@ func (ac ArticleController) SaveArticle(c *fiber.Ctx) error {
 
 	ogImageLink := ""
 
+	fmt.Println(articleBody.Link)
 	og, err := opengraph.Fetch(articleBody.Link)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 
 	if err == nil {
+		fmt.Println(og.Image)
 		if len(og.Image) > 0 {
 			ogImageLink = og.Image[0].URL
 		}
@@ -105,7 +111,7 @@ func (ac ArticleController) GetAllArticlesOfUser(c *fiber.Ctx) error {
 //	@Success		200				{object}	models.Article
 //	@Failure		400				{object}	common.ErrorMessage
 //	@Failure		500				{object}	common.ErrorMessage
-//	@Router			/article/:articleId [get]
+//	@Router			/article/{articleId} [get]
 func (ac ArticleController) GetArticleById(c *fiber.Ctx) error {
 	articleId, err := strconv.Atoi(c.Params("articleId"))
 
@@ -162,7 +168,7 @@ func (ac ArticleController) DeleteArticlesByUserId(c *fiber.Ctx) error {
 //	@Success		200
 //	@Failure		400	{object}	common.ErrorMessage
 //	@Failure		500	{object}	common.ErrorMessage
-//	@Router			/article/:articleId [delete]
+//	@Router			/article/{articleId} [delete]
 func (ac ArticleController) DeleteArticleById(c *fiber.Ctx) error {
 	articleId, err := strconv.Atoi(c.Params("articleId"))
 
@@ -192,7 +198,7 @@ func (ac ArticleController) DeleteArticleById(c *fiber.Ctx) error {
 //	@Success		200
 //	@Failure		400				{object}	common.ErrorMessage
 //	@Failure		500				{object}	common.ErrorMessage
-//	@Router			/article/title/:articleId [patch]
+//	@Router			/article/title/{articleId} [patch]
 func (ac ArticleController) UpdateArticleTitleById(c *fiber.Ctx) error {
 	articleId, err := strconv.Atoi(c.Params("articleId"))
 
