@@ -14,7 +14,7 @@ func (us UserService) IssueJwt(userEmail string, userId uint) (string, error) {
 		key   []byte
 		token *jwt.Token
 	)
-
+	
 	key = []byte(os.Getenv("SECRET_KEY"))
 	token = jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
