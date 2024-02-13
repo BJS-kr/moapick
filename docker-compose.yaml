@@ -1,12 +1,12 @@
 services:
   webserver:
-    image: caddy2
+    image: caddy
     depends_on:
       - server
     ports:
       - 80:80
       - 443:443
-    command: caddy reverse-proxy --from 모아픽.서버.한국 --to server:8080
+    command: caddy reverse-proxy --from moapick.p-e.kr --to server:8080
   server:
     image: iron2ron/moapick:latest
     depends_on:
