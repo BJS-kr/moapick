@@ -166,6 +166,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/article.UpdateArticleTitleBody"
                         }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "article id",
+                        "name": "articleId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -363,7 +370,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/tag/articles{tagId}": {
+        "/tag/articles/{tagId}": {
             "get": {
                 "description": "tag id에 해당하는 모든 articles를 반환합니다.",
                 "tags": [

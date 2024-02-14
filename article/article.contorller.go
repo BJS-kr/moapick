@@ -195,6 +195,7 @@ func (ac ArticleController) DeleteArticleById(c *fiber.Ctx) error {
 //	@Accept			json
 //	@Param			Authorization	header	string					true	"Insert your access token"	default(Bearer <Add access token here>)
 //	@Param			request			body	UpdateArticleTitleBody	true	"title to update"
+// 	@Param          articleId       path    integer                 true    "article id"
 //	@Success		200
 //	@Failure		400				{object}	common.ErrorMessage
 //	@Failure		500				{object}	common.ErrorMessage

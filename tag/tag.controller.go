@@ -213,7 +213,7 @@ func (tc TagController) DeleteTagById(c *fiber.Ctx) error {
 //	@Success		200				{array}		models.Article
 //	@Failure		400				{object}	common.ErrorMessage
 //	@Failure		500				{object}	common.ErrorMessage
-//	@Router			/tag/articles{tagId} [get]
+//	@Router			/tag/articles/{tagId} [get]
 func (tc TagController) GetArticlesByTagId(c *fiber.Ctx) error {
 	userId, ok := c.Locals("userId").(uint)
 

@@ -276,6 +276,11 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/article.UpdateArticleTitleBody'
+      - description: article id
+        in: path
+        name: articleId
+        required: true
+        type: integer
       responses:
         "200":
           description: OK
@@ -378,7 +383,7 @@ paths:
       summary: user의 모든 tag를 반환합니다.
       tags:
       - tag
-  /tag/articles{tagId}:
+  /tag/articles/{tagId}:
     get:
       description: tag id에 해당하는 모든 articles를 반환합니다.
       parameters:
