@@ -51,7 +51,6 @@ func (ac ArticleController) SaveArticle(c *fiber.Ctx) error {
 
 	ogImageLink := ""
 
-	fmt.Println(articleBody.Link)
 	og, err := opengraph.Fetch(articleBody.Link)
 	if err != nil {
 		fmt.Println(err.Error())
