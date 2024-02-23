@@ -18,6 +18,7 @@ func TagRouter(r *fiber.App) {
 	t.Get("/all", tagController.GetAllTagsOfUser)
 	t.Patch("/attach", tagController.AttachTagToArticle)
 	t.Patch("/detach", tagController.DetachTagFromArticle)
+	t.Patch("/:tagId", tagController.UpdateTagById)
 	t.Delete("/:tagId", tagController.DeleteTagById)
 	t.Get("/articles/:tagId", tagController.GetArticlesByTagId)
 }

@@ -249,3 +249,57 @@ func (tc TagController) GetArticlesByTagId(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(articlesByTag)
 }
+
+// ShowAccount godoc
+//
+//	@Summary		tag의 title을 수정합니다.
+//	@Description	tag id에 해당하는 tag의 title을 수정합니다.
+//	@Tags			tag
+//	@Param			Authorization	header		string	true	"Insert your access token"	default(Bearer <Add access token here>)
+//	@Param			tagId			path		integer	true	"tag id to update"
+//	@Success		200				
+//	@Failure		400				{object}	common.ErrorMessage
+//	@Failure		500				{object}	common.ErrorMessage
+//	@Router			/tag/{tagId} [patch]
+func (tc TagController) UpdateTagById(c *fiber.Ctx) error {
+	userId, ok := c.Locals("userId").(uint)
+
+	if !ok {
+		log.Println("failed to assert userId as uint")
+		return c.Status(fiber.StatusInternalServerError).JSON(common.ErrorMessage{Error: "failed to get user id"})
+	}
+
+	tagId, err := strconv.Atoi(c.Params("tagId"))
+
+	if err != nil {
+		log.Println(err.Error())
+		return c.Status(fiber.StatusUnauthorized).JSON(common.ErrorMessage{Error: "failed to get tag id"})
+	}
+
+	belongsToUser, err := tc.TagRepository.IsTagBelongsToUser(userId, uint(tagId))
+
+	if !belongsToUser {
+		if err != nil {
+			log.Println(err.Error())
+			return c.Status(fiber.StatusInternalServerError).JSON(common.ErrorMessage{Error: "failed to update tag"})
+		} else {
+			return c.Status(fiber.StatusUnauthorized).JSON(common.ErrorMessage{Error: "tag does not belongs to user"})
+		}
+	}
+
+	tagBody := new(TagBody)
+
+	if err := c.BodyParser(tagBody); err != nil {
+		log.Panicln(err.Error())
+		return c.Status(fiber.StatusBadRequest).JSON(common.ErrorMessage{Error: "unexpected request body"})
+	}
+
+	err = tc.TagRepository.UpdateTagById(uint(tagId), tagBody.Title)
+
+	if err != nil {
+		log.Println(err.Error())
+		return c.Status(fiber.StatusInternalServerError).JSON(common.ErrorMessage{Error: "failed to update tag"})
+	}
+
+	return c.SendStatus(fiber.StatusOK)
+}

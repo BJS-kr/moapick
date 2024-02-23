@@ -77,3 +77,9 @@ func (tr TagRepository) GetArticlesByTagId(tagId uint) ([]*models.Article, error
 
 	return tagEntity.Articles, nil
 }
+
+func (tr TagRepository) UpdateTagById(tagId uint, title string) error {
+	tagEntity := models.Tag{ID: tagId}
+
+	return tr.Client.Model(&tagEntity).Update("title", title).Error
+}
